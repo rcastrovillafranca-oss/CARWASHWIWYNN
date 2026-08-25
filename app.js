@@ -9,7 +9,8 @@
     ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
     : null;
 
-  const MINUTES_PER_VEHICLE = 25;
+  // A partir de cuántos carros por delante mostramos el aviso de espera.
+  const WARNING_THRESHOLD = 5;
 
   // ---------- Scroll reveal (runs first so a later error never leaves content invisible) ----------
 
@@ -77,30 +78,43 @@
     submitLabel.textContent = "Registrando...";
 
     try {
-      let folio;
+      let turno;
+      let carrosAdelante = 0;
 
       if (client) {
-        const { data: inserted, error } = await client
-          .from("registros")
-          .insert({
-            nombre: data.nombre,
-            telefono: data.telefono,
-            tipo_auto: data.tipo_auto,
-            precio: data.precio,
-          })
-          .select("id")
-          .single();
+        // Llama a la función registrar_lavado (ver supabase/schema.sql): inserta
+        // el registro y de paso calcula el turno del día y cuántos autos en
+        // espera hay antes que el suyo — todo en un solo paso atómico, sin
+        // que el navegador necesite leer la tabla completa.
+        const { data: result, error } = await client.rpc("registrar_lavado", {
+          p_nombre: data.nombre,
+          p_telefono: data.telefono,
+          p_tipo_auto: data.tipo_auto,
+          p_precio: data.precio,
+          p_marca: data.marca,
+          p_modelo: data.modelo,
+        });
 
         if (error) throw error;
-        folio = inserted.id.slice(0, 8).toUpperCase();
-        refreshStats();
+        const row = Array.isArray(result) ? result[0] : result;
+        turno = row.turno;
+        carrosAdelante = row.carros_adelante || 0;
       } else {
         console.warn("Supabase no está configurado (config.js). Guardando solo en consola.");
-        folio = Math.random().toString(36).slice(2, 10).toUpperCase();
+        turno = Math.floor(Math.random() * 9) + 1;
       }
 
       document.getElementById("success-nombre").textContent = data.nombre;
-      document.getElementById("success-folio").textContent = folio;
+      document.getElementById("success-turno").textContent = turno;
+      document.getElementById("success-auto").textContent = `${data.marca} ${data.modelo}`;
+
+      const warning = document.getElementById("success-warning");
+      if (carrosAdelante >= WARNING_THRESHOLD) {
+        document.getElementById("success-adelante").textContent = carrosAdelante;
+        warning.classList.remove("hidden");
+      } else {
+        warning.classList.add("hidden");
+      }
 
       form.classList.add("hidden");
       success.classList.remove("hidden");
@@ -121,56 +135,6 @@
     form.classList.remove("hidden");
     document.getElementById("registro").scrollIntoView({ behavior: "smooth" });
   });
-
-  // ---------- Live stats ----------
-
-  const statEspera = document.getElementById("stat-espera");
-  const statHoy = document.getElementById("stat-hoy");
-  const statTiempo = document.getElementById("stat-tiempo");
-
-  function animateValue(el, to) {
-    const from = Number(el.dataset.value || 0);
-    if (from === to) return;
-    el.dataset.value = to;
-    const duration = 500;
-    const start = performance.now();
-    function step(now) {
-      const progress = Math.min(1, (now - start) / duration);
-      const value = Math.round(from + (to - from) * progress);
-      el.textContent = value;
-      if (progress < 1) requestAnimationFrame(step);
-    }
-    requestAnimationFrame(step);
-  }
-
-  async function refreshStats() {
-    if (!client) {
-      statEspera.textContent = "—";
-      statHoy.textContent = "—";
-      statTiempo.textContent = "—";
-      return;
-    }
-
-    try {
-      // Lee un view agregado (registros_stats) en vez de la tabla registros
-      // directo: así la página pública nunca puede pedir nombres/teléfonos,
-      // solo los conteos. Ver supabase/schema.sql.
-      const { data, error } = await client.from("registros_stats").select("en_espera, atendidos_hoy").single();
-      if (error) throw error;
-
-      const espera = data.en_espera || 0;
-      animateValue(statEspera, espera);
-      animateValue(statHoy, data.atendidos_hoy || 0);
-
-      const minutos = espera * MINUTES_PER_VEHICLE;
-      statTiempo.textContent = espera === 0 ? "0 min" : minutos < 60 ? `~${minutos} min` : `~${(minutos / 60).toFixed(1)} h`;
-    } catch (err) {
-      console.error("No se pudieron cargar las estadísticas", err);
-    }
-  }
-
-  refreshStats();
-  setInterval(refreshStats, 20000);
 
   // ---------- Sticky CTA ----------
 

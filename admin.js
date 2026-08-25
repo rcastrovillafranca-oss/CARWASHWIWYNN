@@ -84,7 +84,7 @@
   async function loadRows() {
     const { data, error } = await client
       .from("registros")
-      .select("id, created_at, nombre, telefono, tipo_auto, precio, estado")
+      .select("id, created_at, nombre, telefono, marca, modelo, tipo_auto, precio, turno, estado")
       .order("created_at", { ascending: true });
 
     if (error) {
@@ -221,25 +221,18 @@
     list.innerHTML = "";
     empty.classList.toggle("hidden", items.length > 0);
 
-    let posCounter = 0;
-
     items.forEach((row) => {
       const node = template.content.cloneNode(true);
       const article = node.querySelector(".row");
       article.classList.add(`row--${row.estado}`);
 
-      const posEl = node.querySelector(".row__pos");
-      if (row.estado === "pendiente") {
-        posCounter += 1;
-        posEl.textContent = posCounter;
-      } else if (row.estado === "en_proceso") {
-        posEl.textContent = "⚙";
-      } else {
-        posEl.textContent = "✓";
-      }
+      // El número de turno es el mismo que ve el cliente en su pantalla de
+      // confirmación — así el equipo puede llamarlo "turno 5" y coincide.
+      node.querySelector(".row__pos").textContent = row.turno != null ? row.turno : "—";
 
       node.querySelector(".row__nombre").textContent = row.nombre;
       node.querySelector(".row__precio").textContent = `$${row.precio}`;
+      node.querySelector(".row__auto").textContent = [row.marca, row.modelo].filter(Boolean).join(" ") || "—";
 
       const tel = node.querySelector(".row__tel");
       tel.textContent = row.telefono;

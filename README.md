@@ -14,7 +14,9 @@ Sitio estático (HTML/CSS/JS puro, sin build), pensado para **Netlify** +
    contraseña de base de datos (guárdala, no la necesitas para este sitio).
 3. Cuando el proyecto termine de crearse, ve a **SQL Editor → New query**,
    pega el contenido de `supabase/schema.sql` y dale **Run**. Esto crea la
-   tabla `registros` con los permisos correctos.
+   tabla `registros`, la función `registrar_lavado()` y los permisos
+   correctos. Si ya lo habías corrido antes de que existieran los turnos o
+   marca/modelo, vuelve a correrlo completo — es seguro, no borra datos.
 4. Ve a **Project Settings → API**. Copia:
    - **Project URL**
    - **anon public key**
@@ -62,24 +64,30 @@ creaste en el paso 3. Ahí tu equipo ve:
 - Un resumen arriba con cuántos autos están en espera, en proceso, cuántos
   se atendieron hoy y cuánto se ha facturado hoy.
 
-Cada tarjeta trae el teléfono como link (toca para llamar) y hace cuánto se
-registró. Todo se actualiza solo en tiempo real para todo el equipo
-(gracias a Supabase Realtime) — no hace falta refrescar la página.
+Cada tarjeta trae el teléfono como link (toca para llamar), la marca/modelo
+del auto y hace cuánto se registró. Todo se actualiza solo en tiempo real
+para todo el equipo (gracias a Supabase Realtime) — no hace falta refrescar
+la página.
 
-La página pública (`/`) solo muestra 3 datos agregados, sin nombres ni
-teléfonos (por seguridad, ver nota abajo):
+El número redondo de cada tarjeta es el **turno** — el mismo número que se
+le mostró al cliente al registrarse, así que el equipo puede llamarlo por
+ese número y va a coincidir.
 
-- **En espera ahora**, **Atendidos hoy**, **Espera estimada** (autos en
-  espera × ~25 min cada uno — ajustable, ver el final de este README).
+**La página pública (`/`) no muestra la cola ni el turno actual a nadie más**
+que al propio cliente que se acaba de registrar: al terminar su registro ve
+únicamente su turno y, solo si hay 5 autos o más por delante de él, un
+aviso de que la espera puede tardar más de lo normal (el umbral se controla
+con `WARNING_THRESHOLD` al inicio de `app.js`).
 
 > **Nota de seguridad:** la key pública (`config.js`) vive en el navegador
 > de cualquiera que visite el sitio, así que la tabla `registros` **no**
-> tiene una política que permita leerla completa con esa key — solo
-> permite insertar registros nuevos. Los 3 números de la página pública
-> salen de un view (`registros_stats`) que solo expone conteos, nunca
-> nombres/teléfonos. El panel `/admin` sí ve todo, pero solo porque entra
-> con una sesión de Supabase Auth (usuario/contraseña), no con la key
-> pública. Todo esto ya está armado en `supabase/schema.sql`.
+> tiene ninguna política que permita leerla ni insertarle filas directo con
+> esa key. En vez de eso, el registro pasa por una función de base de datos
+> (`registrar_lavado`, en `supabase/schema.sql`) que inserta la fila y
+> calcula el turno + cuántos autos hay por delante, sin exponer nombres ni
+> teléfonos de nadie más. El panel `/admin` sí ve todo, pero solo porque
+> entra con una sesión de Supabase Auth (usuario/contraseña), no con la key
+> pública.
 
 ## 5. Subir el código a GitHub
 
@@ -126,7 +134,7 @@ app.js                           Lógica de index.html (formulario + estadístic
 admin.js                         Lógica de admin.html (login, cola, cambios de estado)
 config.js                        Credenciales de Supabase (edítalo, ver paso 2)
 .env.example                     Qué variables existen y para qué sirve cada una
-supabase/schema.sql              Tabla, vista de estadísticas públicas y permisos (RLS)
+supabase/schema.sql              Tabla, función registrar_lavado() y permisos (RLS)
 netlify.toml                     Deploy + redirect /admin → /admin.html
 assets/                          Logos (ya con fondo transparente)
 scripts/quitar_fondo_logo.py     Utilidad para quitarle el fondo blanco a un logo nuevo
@@ -149,7 +157,3 @@ formulario dentro de `index.html`. Si cambian, actualiza:
 
 - Las dos `<article class="price-card">` en la sección `#precios`.
 - Los dos `<button class="toggle">` dentro de `#toggle-tipo`.
-
-El tiempo promedio por vehículo usado para calcular "Espera estimada" es una
-constante `MINUTES_PER_VEHICLE = 25` al inicio de `app.js` — ajústala si tu
-equipo tarda más o menos en promedio.

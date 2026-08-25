@@ -227,6 +227,16 @@
   font-size: 14px;
 }
 
+.row__auto {
+  margin: 2px 0 0;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--cyan-bright);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
 .row__meta {
   display: flex;
   flex-wrap: wrap;

@@ -30,30 +30,6 @@
   <h1 class="hero__title">Lava tu carro<br><span>sin bajar del trabajo</span></h1>
   <p class="hero__subtitle">Regístrate en menos de un minuto, deja tu auto en tu turno y nuestro equipo se encarga de todo el detallado.</p>
   <a href="#registro" class="btn btn--primary hero__cta">Registrar mi carro</a>
-
-  <div class="stats" id="stats" aria-label="Estado del servicio en vivo">
-    <div class="stat">
-      <div class="stat__icon" aria-hidden="true">
-        <svg viewBox="0 0 24 24" fill="none"><path d="M4 17V9.5a2 2 0 0 1 .55-1.38l1.9-2A2 2 0 0 1 7.9 5.5h8.2a2 2 0 0 1 1.45.62l1.9 2a2 2 0 0 1 .55 1.38V17" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/><rect x="3" y="17" width="18" height="3.2" rx="1.2" stroke="currentColor" stroke-width="1.6"/><circle cx="7.5" cy="20.2" r=".2" fill="currentColor" stroke="currentColor"/><circle cx="16.5" cy="20.2" r=".2" fill="currentColor" stroke="currentColor"/></svg>
-      </div>
-      <p class="stat__value" id="stat-espera">–</p>
-      <p class="stat__label">En espera ahora</p>
-    </div>
-    <div class="stat">
-      <div class="stat__icon" aria-hidden="true">
-        <svg viewBox="0 0 24 24" fill="none"><path d="M5 12.5 9.5 17 19 7.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
-      </div>
-      <p class="stat__value" id="stat-hoy">–</p>
-      <p class="stat__label">Atendidos hoy</p>
-    </div>
-    <div class="stat">
-      <div class="stat__icon" aria-hidden="true">
-        <svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="8.2" stroke="currentColor" stroke-width="1.6"/><path d="M12 7.5V12l3 2" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
-      </div>
-      <p class="stat__value" id="stat-tiempo">–</p>
-      <p class="stat__label">Espera estimada</p>
-    </div>
-  </div>
 </header>
 
 <main>
@@ -67,8 +43,8 @@
       </div>
       <div class="how__step reveal">
         <div class="how__num">2</div>
-        <h3>Sigue tu turno</h3>
-        <p>Vuelve a esta página cuando quieras para ver cuántos autos hay antes que el tuyo.</p>
+        <h3>Guarda tu turno</h3>
+        <p>Te damos tu número de turno al instante. No hace falta que estés al pendiente, nosotros te avisamos.</p>
       </div>
       <div class="how__step reveal">
         <div class="how__num">3</div>
@@ -122,6 +98,17 @@
         <input id="telefono" name="telefono" type="tel" autocomplete="tel" required placeholder="10 dígitos" inputmode="numeric">
       </div>
 
+      <div class="field-row">
+        <div class="field">
+          <label for="marca">Marca</label>
+          <input id="marca" name="marca" type="text" required placeholder="Ej. Toyota">
+        </div>
+        <div class="field">
+          <label for="modelo">Modelo</label>
+          <input id="modelo" name="modelo" type="text" required placeholder="Ej. Corolla">
+        </div>
+      </div>
+
       <div class="field">
         <span class="field__label">Tipo de vehículo</span>
         <div class="toggle-group" id="toggle-tipo" role="radiogroup" aria-label="Tipo de vehículo">
@@ -143,10 +130,16 @@
     </form>
 
     <div class="success hidden" id="success">
-      <div class="success__icon" aria-hidden="true">✓</div>
-      <h3>¡Listo, <span id="success-nombre"></span>!</h3>
-      <p>Tu carro quedó registrado en la fila.<br>Te contactamos al teléfono que dejaste cuando esté listo.</p>
-      <p class="success__folio">Folio <span id="success-folio"></span></p>
+      <p class="success__eyebrow">Tu turno</p>
+      <p class="success__turno">#<span id="success-turno">–</span></p>
+      <h3>¡Gracias, <span id="success-nombre"></span>!</h3>
+      <p>Registramos tu <strong id="success-auto"></strong>.<br>Te contactamos al teléfono que dejaste cuando esté listo.</p>
+
+      <div class="success__warning hidden" id="success-warning">
+        <span aria-hidden="true">⏳</span>
+        Tienes <strong id="success-adelante"></strong> carros por delante — la espera puede tardar un poco más de lo normal.
+      </div>
+
       <button type="button" class="btn btn--ghost" id="reset-btn">Registrar otro carro</button>
     </div>
   </section>
