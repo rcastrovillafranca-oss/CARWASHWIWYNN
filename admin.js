@@ -158,6 +158,21 @@
     return tipo === "troca" ? "Troca / Camioneta" : "Carro chico";
   }
 
+  // Ajusta esto si tu equipo opera fuera de México, o si capturan el
+  // teléfono ya con lada de país incluida.
+  const WHATSAPP_COUNTRY_CODE = "52";
+
+  function whatsappLink(row) {
+    const digits = row.telefono.replace(/\D/g, "");
+    const phone = digits.length === 10 ? WHATSAPP_COUNTRY_CODE + digits : digits;
+    const auto = [row.marca, row.modelo].filter(Boolean).join(" ") || "carro";
+    const mensaje =
+      `Hola ${row.nombre}! 👋 ¿Cómo estás? Te informamos que tu ${auto} ` +
+      `ya está listo ✅. Cuando gustes puedes pasar por él. ` +
+      `¡Gracias por tu preferencia! - Detallados Barraza`;
+    return `https://wa.me/${phone}?text=${encodeURIComponent(mensaje)}`;
+  }
+
   function filteredRows() {
     if (activeFilter === "listo") {
       return rows.filter((r) => r.estado === "listo" && isToday(r.created_at)).slice().reverse();
@@ -204,6 +219,14 @@
     }
 
     if (row.estado === "listo") {
+      const wa = document.createElement("a");
+      wa.className = "btn-whatsapp";
+      wa.textContent = "WhatsApp";
+      wa.href = whatsappLink(row);
+      wa.target = "_blank";
+      wa.rel = "noopener";
+      wrap.appendChild(wa);
+
       const undo = document.createElement("button");
       undo.className = "btn-undo";
       undo.textContent = "Reabrir";

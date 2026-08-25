@@ -73,6 +73,13 @@ El número redondo de cada tarjeta es el **turno** — el mismo número que se
 le mostró al cliente al registrarse, así que el equipo puede llamarlo por
 ese número y va a coincidir.
 
+Cuando un auto queda **listo**, aparece un botón **WhatsApp** en su
+tarjeta: abre WhatsApp con un mensaje ya escrito avisándole al cliente que
+puede pasar por su auto, usando su nombre y su marca/modelo — tu equipo solo
+revisa y le da enviar. El número se arma asumiendo México (lada `52`); si
+operan en otro país o capturan el teléfono con lada incluida, ajusta la
+constante `WHATSAPP_COUNTRY_CODE` al inicio de `admin.js`.
+
 **La página pública (`/`) no muestra la cola ni el turno actual a nadie más**
 que al propio cliente que se acaba de registrar: al terminar su registro ve
 únicamente su turno y, solo si hay 5 autos o más por delante de él, un

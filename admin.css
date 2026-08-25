@@ -254,7 +254,8 @@
 
 .row__actions { flex: none; display: flex; gap: 6px; }
 
-.row__actions button {
+.row__actions button,
+.row__actions a {
   border: none;
   border-radius: 10px;
   padding: 9px 12px;
@@ -262,6 +263,10 @@
   font-weight: 700;
   cursor: pointer;
   font-family: var(--font-body);
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  white-space: nowrap;
 }
 
 .row__actions .btn-start {
@@ -277,6 +282,11 @@
 .row__actions .btn-undo {
   background: rgba(255, 255, 255, 0.08);
   color: var(--silver-dim);
+}
+
+.row__actions .btn-whatsapp {
+  background: rgba(37, 211, 102, 0.18);
+  color: #4be18a;
 }
 
 @media (min-width: 560px) {
