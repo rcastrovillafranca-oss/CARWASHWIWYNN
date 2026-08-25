@@ -14,9 +14,10 @@ Sitio estático (HTML/CSS/JS puro, sin build), pensado para **Netlify** +
    contraseña de base de datos (guárdala, no la necesitas para este sitio).
 3. Cuando el proyecto termine de crearse, ve a **SQL Editor → New query**,
    pega el contenido de `supabase/schema.sql` y dale **Run**. Esto crea la
-   tabla `registros`, la función `registrar_lavado()` y los permisos
-   correctos. Si ya lo habías corrido antes de que existieran los turnos o
-   marca/modelo, vuelve a correrlo completo — es seguro, no borra datos.
+   tabla `registros`, la función `registrar_lavado()`, el bucket de Storage
+   `gracias` (para las imágenes de WhatsApp) y todos los permisos
+   correctos. Si ya lo habías corrido antes de una versión anterior de este
+   archivo, vuelve a correrlo completo — es seguro, no borra datos.
 4. Ve a **Project Settings → API**. Copia:
    - **Project URL**
    - **anon public key**
@@ -73,26 +74,34 @@ El número redondo de cada tarjeta es el **turno** — el mismo número que se
 le mostró al cliente al registrarse, así que el equipo puede llamarlo por
 ese número y va a coincidir.
 
-Al tocar **"Listo 💬"**, el panel marca el auto como listo, abre WhatsApp
-**directo en el chat del cliente correcto** (usando su número, vía wa.me —
-nunca un buscador de contactos genérico) con el mensaje ya escrito, y
-descarga una **imagen personalizada de agradecimiento** (tu logo, el
-nombre del cliente y su auto) para que tu equipo la arrastre a ese mismo
-chat antes de enviar.
+Al tocar **"Listo 💬"**, el panel:
+
+1. Marca el auto como listo.
+2. Genera la **imagen personalizada de agradecimiento** (tu logo, el
+   nombre del cliente y su auto) y la sube a Supabase Storage.
+3. Abre WhatsApp **directo en el chat del cliente correcto** (usando su
+   número, vía wa.me — nunca un buscador de contactos genérico) con un
+   mensaje que ya trae el link de esa imagen dentro. WhatsApp lo reconoce
+   como imagen y muestra la vista previa directo en el chat — tu equipo
+   solo revisa y le da enviar, **sin adjuntar ni arrastrar nada**.
+
+Si por lo que sea la imagen no se pudo subir (por ejemplo si aún no has
+corrido la versión más reciente de `supabase/schema.sql`), el panel cae de
+respaldo al plan anterior: abre igual el chat correcto con el texto, y
+descarga la imagen para que la adjunten a mano por esta vez.
 
 Se descartó a propósito usar el botón nativo de "Compartir" del celular:
 aunque sí adjunta la imagen automáticamente, abre un buscador de contactos
 en blanco (no hay forma de decirle a quién enviar), así que tu equipo
-tendría que adivinar el contacto correcto — peor que el paso manual de
-arrastrar una imagen a un chat que ya está abierto en la persona correcta.
-Mandar imagen + texto 100% automático, ya dirigido al número exacto, solo
-se puede con la API de negocio de Meta (de paga, con verificación — el
-costo real es bajo, ~$0.01 USD por mensaje, pero el trámite con Meta puede
-tardar días o semanas y no depende de nosotros).
+tendría que adivinar el contacto correcto. Mandar imagen + texto 100%
+automático dentro de la conversación (en vez de como vista previa de un
+link) solo se puede con la API de negocio de Meta (de paga, con
+verificación — el costo real es bajo, ~$0.01 USD por mensaje, pero el
+trámite con Meta puede tardar días o semanas y no depende de nosotros).
 
 Si necesitas volver a mandarlo después, cada auto ya listo tiene un botón
-**"Reenviar"** (repite exactamente el mismo proceso) y **"Reabrir"** por si
-lo marcaste listo por error.
+**"Reenviar"** (repite exactamente el mismo proceso, generando una imagen
+nueva) y **"Reabrir"** por si lo marcaste listo por error.
 
 El mensaje usa el primer nombre del cliente y su marca/modelo en
 **negritas** (WhatsApp interpreta `*así*` como negritas). A propósito

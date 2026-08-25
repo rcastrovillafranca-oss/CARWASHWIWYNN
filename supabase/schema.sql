@@ -118,3 +118,21 @@ end $$;
 -- Ya no se usa (versión anterior mostraba conteos en vivo en la página
 -- pública); se limpia por si la corriste antes.
 drop view if exists registros_stats;
+
+-- ---------- Storage: imágenes de "gracias" para WhatsApp ----------
+--
+-- Cuando el panel marca un auto como listo, sube la imagen de agradecimiento
+-- aquí y pega su link público dentro del mensaje de WhatsApp — así WhatsApp
+-- la muestra como foto (vista previa) sin que nadie tenga que adjuntarla a
+-- mano. El bucket es público (cualquiera con el link exacto puede verla,
+-- igual que cualquier imagen que se comparte por WhatsApp normalmente), pero
+-- solo un admin logueado puede subir imágenes nuevas.
+insert into storage.buckets (id, name, public)
+values ('gracias', 'gracias', true)
+on conflict (id) do update set public = true;
+
+drop policy if exists "admin subir imagenes gracias" on storage.objects;
+create policy "admin subir imagenes gracias"
+on storage.objects for insert
+to authenticated
+with check (bucket_id = 'gracias');

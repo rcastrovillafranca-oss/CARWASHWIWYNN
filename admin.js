@@ -182,18 +182,17 @@
   // Texto del mensaje, sin ningún emoji: WhatsApp Desktop en Windows rompe
   // los de "cara/objeto/mano" (par sustituto en Unicode) cuando llegan por
   // un link wa.me, y ya nos pasó dos veces — más vale no arriesgarse.
-  function mensajeListo(row) {
+  //
+  // imageUrl (opcional): si ya se subió la imagen de agradecimiento, se
+  // pega su link en su propia línea — WhatsApp la reconoce como imagen y
+  // la muestra con vista previa dentro del mensaje, sin que nadie tenga
+  // que adjuntar nada a mano.
+  function mensajeListo(row, imageUrl) {
     const auto = [row.marca, row.modelo].filter(Boolean).join(" ") || "tu auto";
-    return [
-      `¡Hola ${primerNombreDe(row)}!`,
-      "",
-      `Tu *${auto}* ya está listo.`,
-      "",
-      "Puedes pasar por él cuando gustes.",
-      "",
-      "Gracias por tu preferencia.",
-      "*Detallados Barraza*",
-    ].join("\n");
+    const lineas = [`¡Hola ${primerNombreDe(row)}!`, "", `Tu *${auto}* ya está listo.`];
+    if (imageUrl) lineas.push("", imageUrl);
+    lineas.push("", "Puedes pasar por él cuando gustes.", "", "Gracias por tu preferencia.", "*Detallados Barraza*");
+    return lineas.join("\n");
   }
 
   function whatsappPhone(row) {
@@ -203,8 +202,8 @@
     return (esDeEEUU ? WHATSAPP_US_COUNTRY_CODE : WHATSAPP_COUNTRY_CODE) + digits;
   }
 
-  function whatsappLink(row) {
-    return `https://wa.me/${whatsappPhone(row)}?text=${encodeURIComponent(mensajeListo(row))}`;
+  function whatsappLink(row, imageUrl) {
+    return `https://wa.me/${whatsappPhone(row)}?text=${encodeURIComponent(mensajeListo(row, imageUrl))}`;
   }
 
   // ---------- Imagen personalizada de agradecimiento ----------
@@ -317,26 +316,55 @@
     setTimeout(() => URL.revokeObjectURL(url), 5000);
   }
 
-  // Siempre abre el chat del cliente CORRECTO (por su número, vía wa.me)
-  // con el mensaje ya escrito, y descarga la imagen para que se arrastre
-  // ahí mismo. Nada de "compartir" genérico del sistema: eso abre un
-  // buscador de contactos en blanco y no hay forma de saber a quién elegir
-  // — con wa.me siempre es el número exacto del cliente, sin adivinar.
+  // Sube la imagen a Supabase Storage (bucket público "gracias", ver
+  // supabase/schema.sql) y regresa su link público. Ese link se pega
+  // dentro del propio mensaje de WhatsApp — WhatsApp lo reconoce como
+  // imagen y muestra la vista previa directo en el chat, sin que nadie
+  // tenga que adjuntar nada a mano.
+  async function subirImagenGracias(blob, row) {
+    const path = `${Date.now()}-${nombreArchivo(row)}`;
+    const { error } = await client.storage.from("gracias").upload(path, blob, {
+      contentType: "image/png",
+      upsert: false,
+    });
+    if (error) throw error;
+    const { data } = client.storage.from("gracias").getPublicUrl(path);
+    return data.publicUrl;
+  }
+
+  // Siempre abre el chat del cliente CORRECTO (por su número, vía wa.me).
+  // Nada de "compartir" genérico del sistema: eso abre un buscador de
+  // contactos en blanco y no hay forma de saber a quién elegir.
   //
-  // La pestaña de WhatsApp se reserva ANTES de generar la imagen (dentro
-  // del clic del usuario) para que el navegador no la bloquee como pop-up;
-  // luego solo se navega a la URL final.
+  // La imagen se sube a Storage y su link va DENTRO del mensaje, así
+  // WhatsApp la muestra como foto sola, sin arrastrar ni adjuntar nada. Si
+  // la subida falla (ej. no has corrido el schema.sql actualizado), cae de
+  // respaldo a descargar la imagen para adjuntarla a mano.
+  //
+  // La pestaña de WhatsApp se reserva ANTES de las tareas asíncronas
+  // (dentro del clic del usuario) para que el navegador no la bloquee
+  // como pop-up; luego solo se navega a la URL final.
   async function enviarConImagen(row) {
     const waTab = window.open("", "_blank");
     try {
       const canvas = await generarCanvasGracias(row);
       const blob = await canvasToBlob(canvas);
-      if (waTab) {
-        waTab.location = whatsappLink(row);
-      } else {
-        window.open(whatsappLink(row), "_blank");
+
+      let imageUrl = null;
+      try {
+        imageUrl = await subirImagenGracias(blob, row);
+      } catch (e) {
+        console.error("No se pudo subir la imagen a Storage, se descarga en vez de incluirla en el mensaje", e);
       }
-      descargarBlob(blob, nombreArchivo(row));
+
+      const link = whatsappLink(row, imageUrl);
+      if (waTab) {
+        waTab.location = link;
+      } else {
+        window.open(link, "_blank");
+      }
+
+      if (!imageUrl) descargarBlob(blob, nombreArchivo(row));
     } catch (e) {
       console.error("No se pudo generar/enviar la imagen", e);
       if (waTab) waTab.location = whatsappLink(row);
