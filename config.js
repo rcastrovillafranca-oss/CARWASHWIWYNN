@@ -10,5 +10,5 @@
 // NUNCA pongas aquí la Secret key (sb_secret_...) ni la service_role key
 // (JWT con "role":"service_role") — esas se saltan RLS por completo y jamás
 // deben llegar al navegador.
-const SUPABASE_URL = "https://TU-PROYECTO.supabase.co";
-const SUPABASE_ANON_KEY = "TU-ANON-KEY-AQUI";
+const SUPABASE_URL = "https://uidnaxenrcolewdlhjnm.supabase.co";
+const SUPABASE_ANON_KEY = "sb_publishable_aqDYCf2vH0I09Fd_G4JLgg_eX3EDpSz";
