@@ -80,6 +80,13 @@ revisa y le da enviar. El número se arma asumiendo México (lada `52`); si
 operan en otro país o capturan el teléfono con lada incluida, ajusta la
 constante `WHATSAPP_COUNTRY_CODE` al inicio de `admin.js`.
 
+Hasta abajo del panel hay una **zona de peligro**: el botón "Reiniciar
+todos los registros" borra permanentemente toda la tabla (hoy y días
+anteriores) y los turnos vuelven a empezar desde 1. Para evitar un clic por
+accidente, pide escribir la palabra `BORRAR` antes de dejarte confirmar.
+Úsalo, por ejemplo, para limpiar registros de prueba antes de operar en
+serio, o para arrancar de cero cuando quieras.
+
 **La página pública (`/`) no muestra la cola ni el turno actual a nadie más**
 que al propio cliente que se acaba de registrar: al terminar su registro ve
 únicamente su turno y, solo si hay 5 autos o más por delante de él, un

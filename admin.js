@@ -21,6 +21,17 @@
 
   const client = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
+  // ---------- Mostrar/ocultar contraseña ----------
+
+  const passInput = document.getElementById("login-password");
+  const togglePass = document.getElementById("toggle-pass");
+  togglePass.addEventListener("click", () => {
+    const show = passInput.type === "password";
+    passInput.type = show ? "text" : "password";
+    togglePass.textContent = show ? "🙈" : "👁";
+    togglePass.setAttribute("aria-label", show ? "Ocultar contraseña" : "Mostrar contraseña");
+  });
+
   let rows = [];
   let activeFilter = "activos";
   let channel = null;
@@ -269,6 +280,58 @@
       list.appendChild(node);
     });
   }
+
+  // ---------- Zona de peligro: reiniciar todos los registros ----------
+
+  const resetModal = document.getElementById("reset-modal");
+  const resetConfirmInput = document.getElementById("reset-confirm-input");
+  const resetConfirmBtn = document.getElementById("reset-confirm-btn");
+  const resetConfirmLabel = document.getElementById("reset-confirm-label");
+  const resetError = document.getElementById("reset-error");
+
+  function openResetModal() {
+    resetConfirmInput.value = "";
+    resetConfirmBtn.disabled = true;
+    resetError.classList.add("hidden");
+    resetModal.classList.remove("hidden");
+    resetConfirmInput.focus();
+  }
+
+  function closeResetModal() {
+    resetModal.classList.add("hidden");
+  }
+
+  document.getElementById("open-reset-modal").addEventListener("click", openResetModal);
+  document.getElementById("reset-cancel").addEventListener("click", closeResetModal);
+  resetModal.addEventListener("click", (e) => {
+    if (e.target === resetModal) closeResetModal();
+  });
+
+  resetConfirmInput.addEventListener("input", () => {
+    resetConfirmBtn.disabled = resetConfirmInput.value.trim().toUpperCase() !== "BORRAR";
+  });
+
+  resetConfirmBtn.addEventListener("click", async () => {
+    resetConfirmBtn.disabled = true;
+    resetConfirmLabel.textContent = "Borrando...";
+    resetError.classList.add("hidden");
+
+    // Filtro "atrapa-todo" en vez de un delete sin condición: Postgres
+    // siempre tiene created_at, así que esto borra literalmente cada fila.
+    const { error } = await client.from("registros").delete().gte("created_at", "1970-01-01");
+
+    resetConfirmLabel.textContent = "Borrar todo";
+
+    if (error) {
+      console.error("No se pudieron borrar los registros", error);
+      resetError.classList.remove("hidden");
+      resetConfirmBtn.disabled = false;
+      return;
+    }
+
+    closeResetModal();
+    loadRows();
+  });
 
   checkSession();
 })();

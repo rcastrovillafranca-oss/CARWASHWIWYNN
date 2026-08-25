@@ -18,10 +18,22 @@
 
 <!-- ---------- Login ---------- -->
 <main class="login" id="login-view">
+  <div class="bubbles" aria-hidden="true">
+    <span></span><span></span><span></span><span></span><span></span><span></span><span></span>
+  </div>
+
   <div class="login__card">
+    <div class="login__badge" aria-hidden="true">
+      <svg viewBox="0 0 24 24" fill="none" class="login__badge-icon">
+        <circle cx="12" cy="15" r="5.2" stroke="currentColor" stroke-width="1.6"/>
+        <path d="M12 3.2v2.3M8 4.3l1 2.1M16 4.3l-1 2.1" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+      </svg>
+      <span class="login__badge-sparkle">✦</span>
+    </div>
+
     <img src="assets/logo-barraza.png" alt="Detallados Barraza" class="login__logo">
-    <h1>Panel de equipo</h1>
-    <p class="login__hint">Acceso solo para el equipo de Detallados Barraza.</p>
+    <h1>¡Bienvenido de nuevo! 👋</h1>
+    <p class="login__hint">Entra para ver la cola en vivo y avisarle a tus clientes cuando su auto esté listo.</p>
 
     <form id="login-form" class="login__form" novalidate>
       <div class="field">
@@ -30,7 +42,10 @@
       </div>
       <div class="field">
         <label for="login-password">Contraseña</label>
-        <input id="login-password" name="password" type="password" autocomplete="current-password" required placeholder="••••••••">
+        <div class="login__password-wrap">
+          <input id="login-password" name="password" type="password" autocomplete="current-password" required placeholder="••••••••">
+          <button type="button" class="login__toggle-pass" id="toggle-pass" aria-label="Mostrar contraseña">👁</button>
+        </div>
       </div>
       <button type="submit" class="btn btn--primary" id="login-btn">
         <span id="login-label">Entrar</span>
@@ -82,6 +97,38 @@
     <p class="queue__empty hidden" id="queue-empty">No hay registros en esta vista.</p>
     <div class="queue__list" id="queue-list"></div>
   </section>
+
+  <section class="danger-zone">
+    <div>
+      <p class="danger-zone__title">Zona de peligro</p>
+      <p class="danger-zone__hint">Borra todos los registros (de hoy y de antes) y reinicia los turnos desde 1.</p>
+    </div>
+    <button type="button" class="btn btn--danger-outline" id="open-reset-modal">Reiniciar todos los registros</button>
+  </section>
+</div>
+
+<!-- ---------- Modal: reiniciar registros ---------- -->
+<div class="modal hidden" id="reset-modal">
+  <div class="modal__card">
+    <p class="modal__icon" aria-hidden="true">⚠️</p>
+    <h3>¿Borrar todos los registros?</h3>
+    <p class="modal__text">
+      Esto elimina <strong>permanentemente</strong> todos los registros (de
+      hoy y de días anteriores) y los turnos vuelven a empezar desde 1. No
+      se puede deshacer.
+    </p>
+    <label for="reset-confirm-input" class="modal__label">
+      Escribe <strong>BORRAR</strong> para confirmar
+    </label>
+    <input type="text" id="reset-confirm-input" class="modal__input" placeholder="BORRAR" autocomplete="off">
+    <p class="form-error hidden" id="reset-error">No se pudo borrar. Intenta de nuevo.</p>
+    <div class="modal__actions">
+      <button type="button" class="btn btn--ghost" id="reset-cancel">Cancelar</button>
+      <button type="button" class="btn btn--danger" id="reset-confirm-btn" disabled>
+        <span id="reset-confirm-label">Borrar todo</span>
+      </button>
+    </div>
+  </div>
 </div>
 
 <template id="row-template">

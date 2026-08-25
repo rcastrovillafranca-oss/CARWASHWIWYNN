@@ -94,6 +94,15 @@ to authenticated
 using (true)
 with check (true);
 
+-- Permite el botón "Reiniciar todos los registros" (zona de peligro) del
+-- panel: borra todas las filas. Solo un admin logueado puede hacerlo, y en
+-- el panel se pide escribir una palabra de confirmación antes de llamarlo.
+drop policy if exists "admin borrar registros" on registros;
+create policy "admin borrar registros"
+on registros for delete
+to authenticated
+using (true);
+
 -- Activa Realtime en la tabla para que el panel de admin se actualice solo
 -- cuando entra un registro nuevo o cambia de estado.
 do $$
