@@ -147,7 +147,7 @@
 
 .dash__stats {
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
+  grid-template-columns: repeat(3, 1fr);
   gap: 10px;
   margin-bottom: 20px;
 }
@@ -330,11 +330,6 @@
   white-space: nowrap;
 }
 
-.row__actions .btn-start {
-  background: rgba(255, 196, 0, 0.16);
-  color: #ffd469;
-}
-
 .row__actions .btn-done {
   background: linear-gradient(90deg, var(--cyan-bright), var(--cyan));
   color: #041014;
@@ -478,7 +473,3 @@
 }
 
 .modal__actions .btn { flex: 1; padding: 12px; font-size: 13.5px; }
-
-@media (min-width: 560px) {
-  .dash__stats { grid-template-columns: repeat(4, 1fr); }
-}

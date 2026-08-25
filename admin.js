@@ -129,13 +129,11 @@
   }
 
   function renderStats() {
-    const enEspera = rows.filter((r) => r.estado === "pendiente").length;
-    const enProceso = rows.filter((r) => r.estado === "en_proceso").length;
+    const enEspera = rows.filter((r) => r.estado !== "listo").length;
     const listosHoy = rows.filter((r) => r.estado === "listo" && isToday(r.created_at));
     const ingresosHoy = listosHoy.reduce((sum, r) => sum + (r.precio || 0), 0);
 
     document.getElementById("d-espera").textContent = enEspera;
-    document.getElementById("d-proceso").textContent = enProceso;
     document.getElementById("d-listos").textContent = listosHoy.length;
     document.getElementById("d-ingresos").textContent = `$${ingresosHoy}`;
   }
@@ -169,13 +167,21 @@
     return tipo === "troca" ? "Troca / Camioneta" : "Carro chico";
   }
 
-  // Ajusta esto si tu equipo opera fuera de México, o si capturan el
-  // teléfono ya con lada de país incluida.
+  // Lada por default para números de 10 dígitos sin lada de país.
   const WHATSAPP_COUNTRY_CODE = "52";
+  // Excepción: números que empiezan con estas ladas de área son de EE.UU.
+  // (915 = El Paso, TX), así que llevan +1 en vez de +52. Agrega más ladas
+  // aquí si hace falta.
+  const WHATSAPP_US_AREA_CODES = ["915"];
+  const WHATSAPP_US_COUNTRY_CODE = "1";
 
   function whatsappLink(row) {
     const digits = row.telefono.replace(/\D/g, "");
-    const phone = digits.length === 10 ? WHATSAPP_COUNTRY_CODE + digits : digits;
+    let phone = digits;
+    if (digits.length === 10) {
+      const esDeEEUU = WHATSAPP_US_AREA_CODES.some((lada) => digits.startsWith(lada));
+      phone = (esDeEEUU ? WHATSAPP_US_COUNTRY_CODE : WHATSAPP_COUNTRY_CODE) + digits;
+    }
     const primerNombre = (row.nombre || "").trim().split(/\s+/)[0] || row.nombre;
     const auto = [row.marca, row.modelo].filter(Boolean).join(" ") || "tu auto";
     const mensaje = [
@@ -198,7 +204,7 @@
     if (activeFilter === "todos") {
       return rows.slice().reverse();
     }
-    return rows.filter((r) => r.estado === "pendiente" || r.estado === "en_proceso");
+    return rows.filter((r) => r.estado !== "listo");
   }
 
   async function setEstado(id, estado) {
@@ -216,27 +222,7 @@
   }
 
   function fillActions(wrap, row) {
-    if (row.estado === "pendiente") {
-      const start = document.createElement("button");
-      start.className = "btn-start";
-      start.textContent = "Iniciar";
-      start.addEventListener("click", () => setEstado(row.id, "en_proceso"));
-      wrap.appendChild(start);
-
-      const done = document.createElement("button");
-      done.className = "btn-done";
-      done.textContent = "Listo 💬";
-      done.addEventListener("click", () => marcarListoYAvisar(row));
-      wrap.appendChild(done);
-    }
-
-    if (row.estado === "en_proceso") {
-      const undo = document.createElement("button");
-      undo.className = "btn-undo";
-      undo.textContent = "Deshacer";
-      undo.addEventListener("click", () => setEstado(row.id, "pendiente"));
-      wrap.appendChild(undo);
-
+    if (row.estado !== "listo") {
       const done = document.createElement("button");
       done.className = "btn-done";
       done.textContent = "Listo 💬";
@@ -256,7 +242,7 @@
       const undo = document.createElement("button");
       undo.className = "btn-undo";
       undo.textContent = "Reabrir";
-      undo.addEventListener("click", () => setEstado(row.id, "en_proceso"));
+      undo.addEventListener("click", () => setEstado(row.id, "pendiente"));
       wrap.appendChild(undo);
     }
   }

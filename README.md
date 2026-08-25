@@ -57,12 +57,12 @@ usa para entrar en `/admin`.
 Entra a `tu-sitio.netlify.app/admin` e inicia sesión con el usuario que
 creaste en el paso 3. Ahí tu equipo ve:
 
-- **En cola** — quién sigue, en orden (el primero es el siguiente auto),
-  con botones para pasar de "Iniciar" → "Marcar listo".
+- **En cola** — quién sigue, en orden (el primero es el siguiente auto).
+  El flujo es simple, un solo botón: **"Listo 💬"**.
 - **Listos hoy** — los autos ya entregados hoy.
 - **Todos** — historial completo.
-- Un resumen arriba con cuántos autos están en espera, en proceso, cuántos
-  se atendieron hoy y cuánto se ha facturado hoy.
+- Un resumen arriba con cuántos autos están en espera, cuántos se
+  atendieron hoy y cuánto se ha facturado hoy.
 
 Cada tarjeta trae el teléfono como link (toca para llamar), la marca/modelo
 del auto y hace cuánto se registró. Todo se actualiza solo en tiempo real
@@ -73,20 +73,24 @@ El número redondo de cada tarjeta es el **turno** — el mismo número que se
 le mostró al cliente al registrarse, así que el equipo puede llamarlo por
 ese número y va a coincidir.
 
-Al tocar **"Listo 💬"** (desde "En espera" o "En proceso"), el panel hace
-dos cosas a la vez: marca el auto como listo y abre WhatsApp en una pestaña
-nueva con un mensaje ya escrito para el cliente — tu equipo solo revisa y
-le da enviar (nunca se manda solo, sin que ustedes lo confirmen). Si
-necesitas volver a mandarlo después, cada auto ya listo tiene un botón
-**"Reenviar WhatsApp"**.
+Al tocar **"Listo 💬"**, el panel hace dos cosas a la vez: marca el auto
+como listo y abre WhatsApp en una pestaña nueva con un mensaje ya escrito
+para el cliente — tu equipo solo revisa y le da enviar (nunca se manda
+solo, sin que ustedes lo confirmen). Si necesitas volver a mandarlo
+después, cada auto ya listo tiene un botón **"Reenviar WhatsApp"**, y
+**"Reabrir"** por si lo marcaste listo por error.
 
 El mensaje usa el primer nombre del cliente, su marca/modelo en **negritas**
 (WhatsApp interpreta `*así*` como negritas) y saltos de línea para que se
 vea como un mensaje real, no un bloque de texto. Está en la función
 `whatsappLink()` al inicio de `admin.js` si quieres cambiar el tono o el
-texto. El número se arma asumiendo México (lada `52`); si operan en otro
-país o capturan el teléfono con lada incluida, ajusta la constante
-`WHATSAPP_COUNTRY_CODE` justo arriba de esa función.
+texto.
+
+El número se arma asumiendo México (lada `52`) para números de 10 dígitos,
+**excepto** los que empiezan con lada `915` (El Paso, TX), a los que se les
+pone `+1` en vez de `+52` — es la constante `WHATSAPP_US_AREA_CODES` justo
+arriba de `whatsappLink()`; agrega más ladas ahí si tienen clientes de
+otras zonas de EE. UU.
 
 Hasta abajo del panel hay una **zona de peligro**: el botón "Reiniciar
 todos los registros" borra permanentemente toda la tabla (hoy y días
