@@ -43,19 +43,31 @@
 
   const tipoInput = document.getElementById("tipo_auto");
   const precioInput = document.getElementById("precio");
-  const toggles = document.querySelectorAll("#toggle-tipo .toggle");
+  const priceCards = document.querySelectorAll(".price-card");
+  const TIPO_LABELS = { chico: "Carro chico", troca: "Troca / Camioneta" };
 
-  toggles.forEach((btn) => {
-    btn.addEventListener("click", () => {
-      toggles.forEach((b) => {
-        b.classList.remove("active");
-        b.setAttribute("aria-checked", "false");
-      });
-      btn.classList.add("active");
-      btn.setAttribute("aria-checked", "true");
-      tipoInput.value = btn.dataset.tipo;
-      precioInput.value = btn.dataset.precio;
-      submitLabel.textContent = `Confirmar registro · $${btn.dataset.precio}`;
+  function selectCard(card) {
+    priceCards.forEach((c) => {
+      c.classList.remove("selected");
+      c.setAttribute("aria-checked", "false");
+    });
+    card.classList.add("selected");
+    card.setAttribute("aria-checked", "true");
+    tipoInput.value = card.dataset.tipo;
+    precioInput.value = card.dataset.precio;
+    submitLabel.textContent = `Confirmar registro · ${TIPO_LABELS[card.dataset.tipo]} · $${card.dataset.precio}`;
+  }
+
+  priceCards.forEach((card) => {
+    card.addEventListener("click", () => {
+      selectCard(card);
+      document.getElementById("registro").scrollIntoView({ behavior: "smooth" });
+    });
+    card.addEventListener("keydown", (e) => {
+      if (e.key === "Enter" || e.key === " ") {
+        e.preventDefault();
+        card.click();
+      }
     });
   });
 
@@ -116,13 +128,13 @@
       errorMsg.classList.remove("hidden");
     } finally {
       submitBtn.disabled = false;
-      submitLabel.textContent = `Confirmar registro · $${data.precio}`;
+      submitLabel.textContent = `Confirmar registro · ${TIPO_LABELS[tipoInput.value]} · $${precioInput.value}`;
     }
   });
 
   document.getElementById("reset-btn").addEventListener("click", () => {
     form.reset();
-    toggles[0].click();
+    selectCard(priceCards[0]);
     success.classList.add("hidden");
     form.classList.remove("hidden");
     document.getElementById("registro").scrollIntoView({ behavior: "smooth" });
