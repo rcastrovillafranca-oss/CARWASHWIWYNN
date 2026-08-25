@@ -59,14 +59,6 @@
     });
   });
 
-  document.querySelectorAll(".price-card").forEach((card) => {
-    card.addEventListener("click", () => {
-      const match = [...toggles].find((b) => b.dataset.tipo === card.dataset.tipo);
-      if (match) match.click();
-      document.getElementById("registro").scrollIntoView({ behavior: "smooth" });
-    });
-  });
-
   form.addEventListener("submit", async (e) => {
     e.preventDefault();
     errorMsg.classList.add("hidden");
