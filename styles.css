@@ -548,6 +548,14 @@ img { max-width: 100%; display: block; }
   opacity: 0.55;
 }
 
+.footer__admin {
+  display: inline-block;
+  margin-top: 8px;
+  color: var(--silver-dim);
+  font-size: 11px;
+  text-decoration: underline dotted;
+}
+
 .sticky-cta {
   position: fixed;
   left: 0;
