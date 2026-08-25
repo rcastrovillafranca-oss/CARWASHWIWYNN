@@ -73,12 +73,20 @@ El número redondo de cada tarjeta es el **turno** — el mismo número que se
 le mostró al cliente al registrarse, así que el equipo puede llamarlo por
 ese número y va a coincidir.
 
-Cuando un auto queda **listo**, aparece un botón **WhatsApp** en su
-tarjeta: abre WhatsApp con un mensaje ya escrito avisándole al cliente que
-puede pasar por su auto, usando su nombre y su marca/modelo — tu equipo solo
-revisa y le da enviar. El número se arma asumiendo México (lada `52`); si
-operan en otro país o capturan el teléfono con lada incluida, ajusta la
-constante `WHATSAPP_COUNTRY_CODE` al inicio de `admin.js`.
+Al tocar **"Listo 💬"** (desde "En espera" o "En proceso"), el panel hace
+dos cosas a la vez: marca el auto como listo y abre WhatsApp en una pestaña
+nueva con un mensaje ya escrito para el cliente — tu equipo solo revisa y
+le da enviar (nunca se manda solo, sin que ustedes lo confirmen). Si
+necesitas volver a mandarlo después, cada auto ya listo tiene un botón
+**"Reenviar WhatsApp"**.
+
+El mensaje usa el primer nombre del cliente, su marca/modelo en **negritas**
+(WhatsApp interpreta `*así*` como negritas) y saltos de línea para que se
+vea como un mensaje real, no un bloque de texto. Está en la función
+`whatsappLink()` al inicio de `admin.js` si quieres cambiar el tono o el
+texto. El número se arma asumiendo México (lada `52`); si operan en otro
+país o capturan el teléfono con lada incluida, ajusta la constante
+`WHATSAPP_COUNTRY_CODE` justo arriba de esa función.
 
 Hasta abajo del panel hay una **zona de peligro**: el botón "Reiniciar
 todos los registros" borra permanentemente toda la tabla (hoy y días

@@ -176,11 +176,18 @@
   function whatsappLink(row) {
     const digits = row.telefono.replace(/\D/g, "");
     const phone = digits.length === 10 ? WHATSAPP_COUNTRY_CODE + digits : digits;
-    const auto = [row.marca, row.modelo].filter(Boolean).join(" ") || "carro";
-    const mensaje =
-      `Hola ${row.nombre}! 👋 ¿Cómo estás? Te informamos que tu ${auto} ` +
-      `ya está listo ✅. Cuando gustes puedes pasar por él. ` +
-      `¡Gracias por tu preferencia! - Detallados Barraza`;
+    const primerNombre = (row.nombre || "").trim().split(/\s+/)[0] || row.nombre;
+    const auto = [row.marca, row.modelo].filter(Boolean).join(" ") || "tu auto";
+    const mensaje = [
+      `¡Hola ${primerNombre}! 🚗✨`,
+      "",
+      `Tu *${auto}* ya está listo y reluciente.`,
+      "",
+      "Puedes pasar por él cuando gustes 🕐",
+      "",
+      "¡Gracias por tu preferencia! 🙌",
+      "*Detallados Barraza*",
+    ].join("\n");
     return `https://wa.me/${phone}?text=${encodeURIComponent(mensaje)}`;
   }
 
@@ -200,6 +207,14 @@
     // loadRows() se dispara solo vía la suscripción de Realtime.
   }
 
+  // Marca el registro como listo Y abre WhatsApp con el aviso, en un solo
+  // clic. window.open debe llamarse de forma síncrona (antes del await)
+  // para que el navegador no lo bloquee como pop-up.
+  function marcarListoYAvisar(row) {
+    window.open(whatsappLink(row), "_blank", "noopener");
+    setEstado(row.id, "listo");
+  }
+
   function fillActions(wrap, row) {
     if (row.estado === "pendiente") {
       const start = document.createElement("button");
@@ -210,8 +225,8 @@
 
       const done = document.createElement("button");
       done.className = "btn-done";
-      done.textContent = "Listo";
-      done.addEventListener("click", () => setEstado(row.id, "listo"));
+      done.textContent = "Listo 💬";
+      done.addEventListener("click", () => marcarListoYAvisar(row));
       wrap.appendChild(done);
     }
 
@@ -224,15 +239,15 @@
 
       const done = document.createElement("button");
       done.className = "btn-done";
-      done.textContent = "Marcar listo";
-      done.addEventListener("click", () => setEstado(row.id, "listo"));
+      done.textContent = "Listo 💬";
+      done.addEventListener("click", () => marcarListoYAvisar(row));
       wrap.appendChild(done);
     }
 
     if (row.estado === "listo") {
       const wa = document.createElement("a");
       wa.className = "btn-whatsapp";
-      wa.textContent = "WhatsApp";
+      wa.textContent = "Reenviar WhatsApp";
       wa.href = whatsappLink(row);
       wa.target = "_blank";
       wa.rel = "noopener";
