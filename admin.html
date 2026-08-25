@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="es-MX">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Panel · Detallados Barraza</title>
+<meta name="robots" content="noindex, nofollow">
+<meta name="theme-color" content="#070b0f">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@500;600;700&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+<link rel="stylesheet" href="admin.css">
+</head>
+<body class="admin-body">
+
+<div class="bg-mesh" aria-hidden="true"></div>
+
+<!-- ---------- Login ---------- -->
+<main class="login" id="login-view">
+  <div class="login__card">
+    <img src="assets/logo-barraza.png" alt="Detallados Barraza" class="login__logo">
+    <h1>Panel de equipo</h1>
+    <p class="login__hint">Acceso solo para el equipo de Detallados Barraza.</p>
+
+    <form id="login-form" class="login__form" novalidate>
+      <div class="field">
+        <label for="login-email">Correo</label>
+        <input id="login-email" name="email" type="email" autocomplete="username" required placeholder="tu@correo.com">
+      </div>
+      <div class="field">
+        <label for="login-password">Contraseña</label>
+        <input id="login-password" name="password" type="password" autocomplete="current-password" required placeholder="••••••••">
+      </div>
+      <button type="submit" class="btn btn--primary" id="login-btn">
+        <span id="login-label">Entrar</span>
+      </button>
+      <p class="form-error hidden" id="login-error">Correo o contraseña incorrectos.</p>
+      <p class="login__setup hidden" id="login-not-configured">
+        Supabase no está configurado todavía en <code>config.js</code>.
+      </p>
+    </form>
+  </div>
+</main>
+
+<!-- ---------- Dashboard ---------- -->
+<div class="dash hidden" id="dash-view">
+  <header class="dash__header">
+    <div class="dash__brand">
+      <img src="assets/logo-barraza.png" alt="Detallados Barraza" class="dash__logo">
+      <span class="dash__title">Panel de equipo</span>
+    </div>
+    <button type="button" class="btn btn--ghost btn--sm" id="logout-btn">Cerrar sesión</button>
+  </header>
+
+  <section class="dash__stats" aria-label="Resumen de hoy">
+    <div class="dstat">
+      <p class="dstat__value" id="d-espera">0</p>
+      <p class="dstat__label">En espera</p>
+    </div>
+    <div class="dstat">
+      <p class="dstat__value" id="d-proceso">0</p>
+      <p class="dstat__label">En proceso</p>
+    </div>
+    <div class="dstat">
+      <p class="dstat__value" id="d-listos">0</p>
+      <p class="dstat__label">Listos hoy</p>
+    </div>
+    <div class="dstat dstat--accent">
+      <p class="dstat__value" id="d-ingresos">$0</p>
+      <p class="dstat__label">Ingresos hoy</p>
+    </div>
+  </section>
+
+  <nav class="tabs" id="tabs" role="tablist" aria-label="Filtrar cola">
+    <button type="button" class="tab active" data-filter="activos" role="tab" aria-selected="true">En cola</button>
+    <button type="button" class="tab" data-filter="listo" role="tab" aria-selected="false">Listos hoy</button>
+    <button type="button" class="tab" data-filter="todos" role="tab" aria-selected="false">Todos</button>
+  </nav>
+
+  <section class="queue" id="queue">
+    <p class="queue__empty hidden" id="queue-empty">No hay registros en esta vista.</p>
+    <div class="queue__list" id="queue-list"></div>
+  </section>
+</div>
+
+<template id="row-template">
+  <article class="row">
+    <div class="row__pos" aria-hidden="true"></div>
+    <div class="row__main">
+      <div class="row__top">
+        <h3 class="row__nombre"></h3>
+        <span class="row__precio"></span>
+      </div>
+      <div class="row__meta">
+        <a class="row__tel" href="#"></a>
+        <span class="row__tipo"></span>
+        <span class="row__hora"></span>
+      </div>
+    </div>
+    <div class="row__actions"></div>
+  </article>
+</template>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<script src="config.js"></script>
+<script src="admin.js"></script>
+</body>
+</html>

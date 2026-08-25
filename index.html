@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="es-MX">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Detallados Barraza · Wiwynn</title>
+<meta name="description" content="Registra el lavado de tu carro en el campus de Wiwynn. Detallados Barraza pasa por él mientras trabajas.">
+<meta name="theme-color" content="#070b0f">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@500;600;700&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<div class="bg-mesh" aria-hidden="true"></div>
+
+<header class="hero">
+  <div class="bubbles" aria-hidden="true">
+    <span></span><span></span><span></span><span></span><span></span><span></span><span></span>
+  </div>
+
+  <div class="hero__brand">
+    <img src="assets/logo-barraza.png" alt="Detallados Barraza" class="brand-logo brand-logo--barraza">
+    <span class="brand-x" aria-hidden="true">×</span>
+    <img src="assets/logo-wiwynn.png" alt="Wiwynn" class="brand-logo brand-logo--wiwynn">
+  </div>
+
+  <p class="hero__eyebrow">Servicio en sitio · Campus Wiwynn</p>
+  <h1 class="hero__title">Lava tu carro<br><span>sin bajar del trabajo</span></h1>
+  <p class="hero__subtitle">Regístrate en menos de un minuto, deja tu auto en tu turno y nuestro equipo se encarga de todo el detallado.</p>
+  <a href="#registro" class="btn btn--primary hero__cta">Registrar mi carro</a>
+
+  <div class="stats" id="stats" aria-label="Estado del servicio en vivo">
+    <div class="stat">
+      <div class="stat__icon" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none"><path d="M4 17V9.5a2 2 0 0 1 .55-1.38l1.9-2A2 2 0 0 1 7.9 5.5h8.2a2 2 0 0 1 1.45.62l1.9 2a2 2 0 0 1 .55 1.38V17" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/><rect x="3" y="17" width="18" height="3.2" rx="1.2" stroke="currentColor" stroke-width="1.6"/><circle cx="7.5" cy="20.2" r=".2" fill="currentColor" stroke="currentColor"/><circle cx="16.5" cy="20.2" r=".2" fill="currentColor" stroke="currentColor"/></svg>
+      </div>
+      <p class="stat__value" id="stat-espera">–</p>
+      <p class="stat__label">En espera ahora</p>
+    </div>
+    <div class="stat">
+      <div class="stat__icon" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none"><path d="M5 12.5 9.5 17 19 7.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </div>
+      <p class="stat__value" id="stat-hoy">–</p>
+      <p class="stat__label">Atendidos hoy</p>
+    </div>
+    <div class="stat">
+      <div class="stat__icon" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="8.2" stroke="currentColor" stroke-width="1.6"/><path d="M12 7.5V12l3 2" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </div>
+      <p class="stat__value" id="stat-tiempo">–</p>
+      <p class="stat__label">Espera estimada</p>
+    </div>
+  </div>
+</header>
+
+<main>
+  <section class="how" id="como-funciona">
+    <h2 class="section-title reveal">Cómo funciona</h2>
+    <div class="how__steps">
+      <div class="how__step reveal">
+        <div class="how__num">1</div>
+        <h3>Regístrate</h3>
+        <p>Escanea el QR, completa tus datos y elige el tipo de vehículo.</p>
+      </div>
+      <div class="how__step reveal">
+        <div class="how__num">2</div>
+        <h3>Sigue tu turno</h3>
+        <p>Vuelve a esta página cuando quieras para ver cuántos autos hay antes que el tuyo.</p>
+      </div>
+      <div class="how__step reveal">
+        <div class="how__num">3</div>
+        <h3>Recógelo listo</h3>
+        <p>Te contactamos por teléfono cuando tu auto esté detallado y esperándote.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="precios" id="precios">
+    <h2 class="section-title reveal">Precios y qué incluye</h2>
+    <div class="cards">
+      <article class="price-card reveal" data-tipo="chico" data-precio="170">
+        <h3>Carro chico</h3>
+        <p class="price-card__price">$170</p>
+        <ul class="price-card__list">
+          <li><span class="service-icon service-icon--lavado" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"><path d="M12 2.8c-3.4 4.5-6.1 8.2-6.1 11.4a6.1 6.1 0 1 0 12.2 0c0-3.2-2.7-6.9-6.1-11.4Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg></span>Lavado exterior</li>
+          <li><span class="service-icon service-icon--aspirado" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"><path d="M4.5 12a7.5 7.5 0 1 1 2.8 5.85" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/><path d="M5.8 19.3 5 15.4l3.9-.7" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></span>Aspirado</li>
+          <li><span class="service-icon service-icon--armor" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"><rect x="8" y="10" width="7" height="11" rx="1.6" stroke="currentColor" stroke-width="1.5"/><path d="M10.5 10V7.3a1 1 0 0 1 1-1h1a1 1 0 0 1 1 1V8.2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><path d="M14.5 6.6h2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><path d="M4.2 6.5v3M2.7 8h3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg></span>Armor All</li>
+          <li><span class="service-icon service-icon--aroma" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"><path d="M7.5 20.5c1.1-1.3 1.1-2.5 0-3.8s-1.1-2.5 0-3.8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><path d="M12 20.5c1.1-1.3 1.1-2.5 0-3.8s-1.1-2.5 0-3.8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><path d="M16.5 20.5c1.1-1.3 1.1-2.5 0-3.8s-1.1-2.5 0-3.8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg></span>Aroma</li>
+        </ul>
+        <span class="price-card__cta">Elegir →</span>
+      </article>
+      <article class="price-card price-card--accent reveal" data-tipo="troca" data-precio="250">
+        <p class="price-card__badge">Más espacio</p>
+        <h3>Troca / Camioneta</h3>
+        <p class="price-card__price">$250</p>
+        <ul class="price-card__list">
+          <li><span class="service-icon service-icon--lavado" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"><path d="M12 2.8c-3.4 4.5-6.1 8.2-6.1 11.4a6.1 6.1 0 1 0 12.2 0c0-3.2-2.7-6.9-6.1-11.4Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg></span>Lavado exterior</li>
+          <li><span class="service-icon service-icon--aspirado" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"><path d="M4.5 12a7.5 7.5 0 1 1 2.8 5.85" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/><path d="M5.8 19.3 5 15.4l3.9-.7" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></span>Aspirado</li>
+          <li><span class="service-icon service-icon--armor" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"><rect x="8" y="10" width="7" height="11" rx="1.6" stroke="currentColor" stroke-width="1.5"/><path d="M10.5 10V7.3a1 1 0 0 1 1-1h1a1 1 0 0 1 1 1V8.2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><path d="M14.5 6.6h2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><path d="M4.2 6.5v3M2.7 8h3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg></span>Armor All</li>
+          <li><span class="service-icon service-icon--aroma" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"><path d="M7.5 20.5c1.1-1.3 1.1-2.5 0-3.8s-1.1-2.5 0-3.8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><path d="M12 20.5c1.1-1.3 1.1-2.5 0-3.8s-1.1-2.5 0-3.8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><path d="M16.5 20.5c1.1-1.3 1.1-2.5 0-3.8s-1.1-2.5 0-3.8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg></span>Aroma</li>
+        </ul>
+        <span class="price-card__cta">Elegir →</span>
+      </article>
+    </div>
+  </section>
+
+  <section class="registro" id="registro">
+    <h2 class="section-title reveal">Registra tu lavado</h2>
+    <p class="registro__subtitle reveal">Solo toma un minuto. Te avisamos por teléfono cuando tu auto esté listo.</p>
+
+    <form id="form-registro" class="form-registro reveal" novalidate>
+      <div class="field">
+        <label for="nombre">Nombre</label>
+        <input id="nombre" name="nombre" type="text" autocomplete="name" required placeholder="Tu nombre">
+      </div>
+
+      <div class="field">
+        <label for="telefono">Teléfono</label>
+        <input id="telefono" name="telefono" type="tel" autocomplete="tel" required placeholder="10 dígitos" inputmode="numeric">
+      </div>
+
+      <div class="field">
+        <span class="field__label">Tipo de vehículo</span>
+        <div class="toggle-group" id="toggle-tipo" role="radiogroup" aria-label="Tipo de vehículo">
+          <button type="button" class="toggle active" data-tipo="chico" data-precio="170" role="radio" aria-checked="true">
+            Carro chico<small>$170</small>
+          </button>
+          <button type="button" class="toggle" data-tipo="troca" data-precio="250" role="radio" aria-checked="false">
+            Troca / Camioneta<small>$250</small>
+          </button>
+        </div>
+        <input type="hidden" name="tipo_auto" id="tipo_auto" value="chico">
+        <input type="hidden" name="precio" id="precio" value="170">
+      </div>
+
+      <button type="submit" class="btn btn--primary form-registro__submit" id="submit-btn">
+        <span id="submit-label">Confirmar registro · $170</span>
+      </button>
+      <p class="form-error hidden" id="form-error">Ocurrió un error al registrar tu carro. Intenta de nuevo.</p>
+    </form>
+
+    <div class="success hidden" id="success">
+      <div class="success__icon" aria-hidden="true">✓</div>
+      <h3>¡Listo, <span id="success-nombre"></span>!</h3>
+      <p>Tu carro quedó registrado en la fila.<br>Te contactamos al teléfono que dejaste cuando esté listo.</p>
+      <p class="success__folio">Folio <span id="success-folio"></span></p>
+      <button type="button" class="btn btn--ghost" id="reset-btn">Registrar otro carro</button>
+    </div>
+  </section>
+</main>
+
+<footer class="footer">
+  <p>Detallados Barraza <span aria-hidden="true">×</span> Wiwynn</p>
+</footer>
+
+<div class="sticky-cta" id="sticky-cta">
+  <a href="#registro" class="btn btn--primary">Registrar mi carro</a>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<script src="config.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
