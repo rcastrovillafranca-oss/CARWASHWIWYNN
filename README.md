@@ -73,35 +73,37 @@ El número redondo de cada tarjeta es el **turno** — el mismo número que se
 le mostró al cliente al registrarse, así que el equipo puede llamarlo por
 ese número y va a coincidir.
 
-Al tocar **"Listo 💬"**, el panel hace tres cosas a la vez:
+Al tocar **"Listo 💬"**, el panel marca el auto como listo y genera una
+**imagen personalizada de agradecimiento** (tu logo, el nombre del cliente
+y su auto), y la manda por el mejor camino que el navegador permita:
 
-1. Marca el auto como listo.
-2. Abre WhatsApp en una pestaña nueva con un mensaje ya escrito para el
-   cliente — tu equipo solo revisa y le da enviar (nunca se manda solo,
-   sin que ustedes lo confirmen).
-3. Descarga automáticamente una **imagen personalizada de agradecimiento**
-   (con tu logo, el nombre del cliente y su auto) a la carpeta de
-   Descargas de la compu.
+- **Desde el celular** (Android/iPhone): usa el botón nativo de "Compartir"
+  del sistema con la imagen ya adjunta — tu equipo elige WhatsApp y el
+  contacto, y se manda la foto de verdad, no solo texto. Esto es lo más
+  parecido a "automático" que se puede lograr sin la API de negocio de
+  Meta (que es de paga y requiere verificación — investigamos el costo:
+  es barato, ~$0.01 USD por mensaje, pero el trámite de verificación con
+  Meta puede tardar días/semanas y no depende de nosotros).
+- **Desde la computadora**: los navegadores de escritorio no dejan
+  compartir archivos así, así que se abre WhatsApp con el mensaje ya
+  escrito (al número correcto) y se descarga la imagen — el único paso
+  manual que queda es arrastrarla al chat antes de enviar.
 
-**Sobre la imagen**: WhatsApp no deja adjuntar una imagen automáticamente
-desde un link — eso solo lo permite su API de negocio (de paga, con cuenta
-verificada), así que el único paso manual que queda es: arrastrar esa
-imagen descargada al chat de WhatsApp antes de darle enviar. Si necesitas
-volver a descargarla o a mandar el mensaje después, cada auto ya listo
-tiene botones **"Reenviar WhatsApp"** y **"🖼️ Imagen"**, y **"Reabrir"**
-por si lo marcaste listo por error.
+Si necesitas volver a mandarlo después, cada auto ya listo tiene un botón
+**"Reenviar"** (repite exactamente el mismo proceso) y **"Reabrir"** por si
+lo marcaste listo por error.
 
-El mensaje usa el primer nombre del cliente, su marca/modelo en **negritas**
-(WhatsApp interpreta `*así*` como negritas) y saltos de línea para que se
-vea como un mensaje real, no un bloque de texto. Evita a propósito emoji
-como 🚗 🕐 🙌 — WhatsApp Desktop en Windows tiene un bug conocido que rompe
-esos emoji (los de "cara/objeto/mano", que usan par sustituto en Unicode)
-en links `wa.me` y los muestra como "??". Está en la función
-`whatsappLink()` al inicio de `admin.js` si quieres cambiar el tono o el
-texto — si agregas emoji nuevos, prueba primero que no sean de ese tipo.
+El mensaje usa el primer nombre del cliente y su marca/modelo en
+**negritas** (WhatsApp interpreta `*así*` como negritas). A propósito
+**no lleva ningún emoji**: WhatsApp Desktop en Windows tiene un bug
+conocido que rompe los emoji de "cara/objeto/mano" (como 🚗 🕐 🙌 — usan
+par sustituto en Unicode) cuando llegan por un link `wa.me`, y se veían
+como "??". Está en la función `mensajeListo()` en `admin.js` si quieres
+cambiar el tono o el texto — si agregas un emoji, evita los de cara/mano/
+objeto, o pruébalo primero en WhatsApp Desktop para Windows.
 
 La imagen de agradecimiento se genera en el navegador con Canvas (función
-`generarImagenGracias()` en `admin.js`) — cambia colores, textos o el
+`generarCanvasGracias()` en `admin.js`) — cambia colores, textos o el
 tamaño del logo ahí si quieres ajustar el diseño.
 
 El número de WhatsApp se arma asumiendo México (lada `52`) para números de

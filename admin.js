@@ -175,29 +175,36 @@
   const WHATSAPP_US_AREA_CODES = ["915"];
   const WHATSAPP_US_COUNTRY_CODE = "1";
 
-  function whatsappLink(row) {
-    const digits = row.telefono.replace(/\D/g, "");
-    let phone = digits;
-    if (digits.length === 10) {
-      const esDeEEUU = WHATSAPP_US_AREA_CODES.some((lada) => digits.startsWith(lada));
-      phone = (esDeEEUU ? WHATSAPP_US_COUNTRY_CODE : WHATSAPP_COUNTRY_CODE) + digits;
-    }
-    const primerNombre = (row.nombre || "").trim().split(/\s+/)[0] || row.nombre;
+  function primerNombreDe(row) {
+    return (row.nombre || "").trim().split(/\s+/)[0] || row.nombre;
+  }
+
+  // Texto del mensaje, sin ningún emoji: WhatsApp Desktop en Windows rompe
+  // los de "cara/objeto/mano" (par sustituto en Unicode) cuando llegan por
+  // un link wa.me, y ya nos pasó dos veces — más vale no arriesgarse.
+  function mensajeListo(row) {
     const auto = [row.marca, row.modelo].filter(Boolean).join(" ") || "tu auto";
-    // Ojo: emoji de "cara/objeto/mano" (🚗 🕐 🙌 👋...) usan par sustituto en
-    // Unicode y WhatsApp Desktop en Windows los rompe en links wa.me (salen
-    // como "??"). Por eso aquí solo se usa ✨, que no tiene ese problema.
-    const mensaje = [
-      `¡Hola ${primerNombre}!`,
+    return [
+      `¡Hola ${primerNombreDe(row)}!`,
       "",
-      `Tu *${auto}* ya quedó listo y reluciente. ✨`,
+      `Tu *${auto}* ya está listo.`,
       "",
       "Puedes pasar por él cuando gustes.",
       "",
-      "¡Gracias por tu preferencia!",
+      "Gracias por tu preferencia.",
       "*Detallados Barraza*",
     ].join("\n");
-    return `https://wa.me/${phone}?text=${encodeURIComponent(mensaje)}`;
+  }
+
+  function whatsappPhone(row) {
+    const digits = row.telefono.replace(/\D/g, "");
+    if (digits.length !== 10) return digits;
+    const esDeEEUU = WHATSAPP_US_AREA_CODES.some((lada) => digits.startsWith(lada));
+    return (esDeEEUU ? WHATSAPP_US_COUNTRY_CODE : WHATSAPP_COUNTRY_CODE) + digits;
+  }
+
+  function whatsappLink(row) {
+    return `https://wa.me/${whatsappPhone(row)}?text=${encodeURIComponent(mensajeListo(row))}`;
   }
 
   // ---------- Imagen personalizada de agradecimiento ----------
@@ -225,7 +232,11 @@
     ctx.closePath();
   }
 
-  async function generarImagenGracias(row) {
+  function nombreArchivo(row) {
+    return `gracias-${primerNombreDe(row).toLowerCase().replace(/[^a-z0-9]+/g, "-")}.png`;
+  }
+
+  async function generarCanvasGracias(row) {
     const size = 1080;
     const canvas = document.createElement("canvas");
     canvas.width = size;
@@ -260,15 +271,14 @@
 
     ctx.fillStyle = "#9fb0b8";
     ctx.font = "700 42px Oswald";
-    ctx.fillText("¡GRACIAS POR TU PREFERENCIA!", size / 2, 540);
+    ctx.fillText("GRACIAS POR TU PREFERENCIA", size / 2, 540);
 
-    const primerNombre = (row.nombre || "").trim().split(/\s+/)[0] || row.nombre;
     const nameGrad = ctx.createLinearGradient(180, 0, size - 180, 0);
     nameGrad.addColorStop(0, "#4fe0ff");
     nameGrad.addColorStop(1, "#22c1e0");
     ctx.fillStyle = nameGrad;
     ctx.font = "700 100px Oswald";
-    ctx.fillText(primerNombre, size / 2, 660);
+    ctx.fillText(primerNombreDe(row), size / 2, 660);
 
     const barW = 150;
     const barGrad = ctx.createLinearGradient(size / 2 - barW / 2, 0, size / 2 + barW / 2, 0);
@@ -287,20 +297,83 @@
     ctx.font = "600 28px Inter";
     ctx.fillText("Detallados Barraza  ×  Wiwynn", size / 2, 980);
 
+    return canvas;
+  }
+
+  function canvasToBlob(canvas) {
     return new Promise((resolve, reject) => {
-      canvas.toBlob((blob) => {
-        if (!blob) return reject(new Error("No se pudo generar la imagen"));
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement("a");
-        a.href = url;
-        a.download = `gracias-${primerNombre.toLowerCase().replace(/[^a-z0-9]+/g, "-")}.png`;
-        document.body.appendChild(a);
-        a.click();
-        a.remove();
-        setTimeout(() => URL.revokeObjectURL(url), 5000);
-        resolve();
-      }, "image/png");
+      canvas.toBlob((blob) => (blob ? resolve(blob) : reject(new Error("No se pudo generar la imagen"))), "image/png");
     });
+  }
+
+  function descargarBlob(blob, nombre) {
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = nombre;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 5000);
+  }
+
+  // Genera la imagen y la manda de la forma más directa que el navegador
+  // permita:
+  //  - Celular (Android/iPhone): usa el "compartir" nativo del sistema con
+  //    la imagen adjunta — el usuario elige WhatsApp y listo, se manda la
+  //    foto de verdad, no solo el texto.
+  //  - Computadora: los navegadores de escritorio no dejan compartir
+  //    archivos así, así que abrimos WhatsApp con el mensaje ya escrito
+  //    (al número correcto) y descargamos la imagen para adjuntarla a mano.
+  async function enviarListoConImagen(row, waTab) {
+    const canvas = await generarCanvasGracias(row);
+    const blob = await canvasToBlob(canvas);
+    const archivo = new File([blob], nombreArchivo(row), { type: "image/png" });
+    const texto = mensajeListo(row);
+
+    // waTab: una pestaña en blanco ya reservada (ver abajo) para cuando el
+    // navegador no puede compartir el archivo directo — así, al navegarla
+    // más abajo, el navegador no la trata como pop-up (eso solo se evita
+    // si la pestaña se abrió dentro del mismo clic del usuario).
+    if (!waTab && navigator.canShare && navigator.canShare({ files: [archivo] })) {
+      try {
+        await navigator.share({ files: [archivo], text: texto, title: "Detallados Barraza" });
+        return;
+      } catch (e) {
+        if (e && e.name === "AbortError") return; // el usuario cerró el menú de compartir
+        console.error("No se pudo compartir la imagen, uso el respaldo", e);
+      }
+    }
+
+    const link = whatsappLink(row);
+    if (waTab) {
+      waTab.location = link;
+    } else {
+      window.open(link, "_blank", "noopener");
+    }
+    descargarBlob(blob, nombreArchivo(row));
+  }
+
+  function puedeCompartirArchivo() {
+    try {
+      const prueba = new File([""], "x.png", { type: "image/png" });
+      return !!(navigator.canShare && navigator.canShare({ files: [prueba] }));
+    } catch (e) {
+      return false;
+    }
+  }
+
+  // Punto de entrada compartido por "Listo" y "Reenviar": si el navegador
+  // puede compartir archivos (celular), no abre nada — el share nativo se
+  // encarga. Si no (computadora), reserva la pestaña de WhatsApp DENTRO del
+  // clic del usuario para que no se bloquee como pop-up.
+  function enviarConImagen(row) {
+    // Ojo: "noopener" hace que window.open() regrese null (no hay
+    // referencia a la ventana), así que aquí NO se usa — si no, nunca
+    // podríamos navegar esta pestaña reservada más abajo. Como el destino
+    // (wa.me) es un dominio conocido y confiable, no hay riesgo real.
+    const waTab = puedeCompartirArchivo() ? null : window.open("", "_blank");
+    enviarListoConImagen(row, waTab).catch((e) => console.error("No se pudo enviar la imagen", e));
   }
 
   function filteredRows() {
@@ -319,14 +392,11 @@
     // loadRows() se dispara solo vía la suscripción de Realtime.
   }
 
-  // Marca el registro como listo, abre WhatsApp con el aviso y descarga la
-  // imagen de agradecimiento — todo en un clic. window.open debe llamarse
-  // de forma síncrona (antes de cualquier await) para que el navegador no
-  // lo bloquee como pop-up; la imagen sí puede tardar un poco en generarse.
+  // Marca el registro como listo y manda el aviso (texto + imagen) por el
+  // mejor camino disponible.
   function marcarListoYAvisar(row) {
-    window.open(whatsappLink(row), "_blank", "noopener");
     setEstado(row.id, "listo");
-    generarImagenGracias(row).catch((e) => console.error("No se pudo generar la imagen", e));
+    enviarConImagen(row);
   }
 
   function fillActions(wrap, row) {
@@ -339,19 +409,11 @@
     }
 
     if (row.estado === "listo") {
-      const wa = document.createElement("a");
+      const wa = document.createElement("button");
       wa.className = "btn-whatsapp";
-      wa.textContent = "Reenviar WhatsApp";
-      wa.href = whatsappLink(row);
-      wa.target = "_blank";
-      wa.rel = "noopener";
+      wa.textContent = "Reenviar";
+      wa.addEventListener("click", () => enviarConImagen(row));
       wrap.appendChild(wa);
-
-      const img = document.createElement("button");
-      img.className = "btn-image";
-      img.textContent = "🖼️ Imagen";
-      img.addEventListener("click", () => generarImagenGracias(row).catch((e) => console.error(e)));
-      wrap.appendChild(img);
 
       const undo = document.createElement("button");
       undo.className = "btn-undo";
