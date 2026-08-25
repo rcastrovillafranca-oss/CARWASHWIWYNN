@@ -184,17 +184,123 @@
     }
     const primerNombre = (row.nombre || "").trim().split(/\s+/)[0] || row.nombre;
     const auto = [row.marca, row.modelo].filter(Boolean).join(" ") || "tu auto";
+    // Ojo: emoji de "cara/objeto/mano" (🚗 🕐 🙌 👋...) usan par sustituto en
+    // Unicode y WhatsApp Desktop en Windows los rompe en links wa.me (salen
+    // como "??"). Por eso aquí solo se usa ✨, que no tiene ese problema.
     const mensaje = [
-      `¡Hola ${primerNombre}! 🚗✨`,
+      `¡Hola ${primerNombre}!`,
       "",
-      `Tu *${auto}* ya está listo y reluciente.`,
+      `Tu *${auto}* ya quedó listo y reluciente. ✨`,
       "",
-      "Puedes pasar por él cuando gustes 🕐",
+      "Puedes pasar por él cuando gustes.",
       "",
-      "¡Gracias por tu preferencia! 🙌",
+      "¡Gracias por tu preferencia!",
       "*Detallados Barraza*",
     ].join("\n");
     return `https://wa.me/${phone}?text=${encodeURIComponent(mensaje)}`;
+  }
+
+  // ---------- Imagen personalizada de agradecimiento ----------
+
+  let logoImgPromise = null;
+  function loadLogoImage() {
+    if (!logoImgPromise) {
+      logoImgPromise = new Promise((resolve, reject) => {
+        const img = new Image();
+        img.onload = () => resolve(img);
+        img.onerror = reject;
+        img.src = "assets/logo-barraza.png";
+      });
+    }
+    return logoImgPromise;
+  }
+
+  function roundRect(ctx, x, y, w, h, r) {
+    ctx.beginPath();
+    ctx.moveTo(x + r, y);
+    ctx.arcTo(x + w, y, x + w, y + h, r);
+    ctx.arcTo(x + w, y + h, x, y + h, r);
+    ctx.arcTo(x, y + h, x, y, r);
+    ctx.arcTo(x, y, x + w, y, r);
+    ctx.closePath();
+  }
+
+  async function generarImagenGracias(row) {
+    const size = 1080;
+    const canvas = document.createElement("canvas");
+    canvas.width = size;
+    canvas.height = size;
+    const ctx = canvas.getContext("2d");
+
+    // Fondo: degradado oscuro con resplandor cian, igual que el sitio.
+    const bg = ctx.createRadialGradient(size / 2, 260, 80, size / 2, size / 2, 820);
+    bg.addColorStop(0, "#132a33");
+    bg.addColorStop(1, "#070b0f");
+    ctx.fillStyle = bg;
+    ctx.fillRect(0, 0, size, size);
+
+    // Logo arriba, centrado.
+    try {
+      const logo = await loadLogoImage();
+      const logoW = 360;
+      const logoH = (logo.height / logo.width) * logoW;
+      ctx.drawImage(logo, (size - logoW) / 2, 90, logoW, logoH);
+    } catch (e) {
+      console.error("No se pudo cargar el logo para la imagen", e);
+    }
+
+    await Promise.all([
+      document.fonts.load("700 96px Oswald"),
+      document.fonts.load("700 42px Oswald"),
+      document.fonts.load("600 36px Inter"),
+      document.fonts.load("600 28px Inter"),
+    ]);
+
+    ctx.textAlign = "center";
+
+    ctx.fillStyle = "#9fb0b8";
+    ctx.font = "700 42px Oswald";
+    ctx.fillText("¡GRACIAS POR TU PREFERENCIA!", size / 2, 540);
+
+    const primerNombre = (row.nombre || "").trim().split(/\s+/)[0] || row.nombre;
+    const nameGrad = ctx.createLinearGradient(180, 0, size - 180, 0);
+    nameGrad.addColorStop(0, "#4fe0ff");
+    nameGrad.addColorStop(1, "#22c1e0");
+    ctx.fillStyle = nameGrad;
+    ctx.font = "700 100px Oswald";
+    ctx.fillText(primerNombre, size / 2, 660);
+
+    const barW = 150;
+    const barGrad = ctx.createLinearGradient(size / 2 - barW / 2, 0, size / 2 + barW / 2, 0);
+    barGrad.addColorStop(0, "#4fe0ff");
+    barGrad.addColorStop(1, "#8dc63f");
+    ctx.fillStyle = barGrad;
+    roundRect(ctx, size / 2 - barW / 2, 690, barW, 6, 3);
+    ctx.fill();
+
+    const auto = [row.marca, row.modelo].filter(Boolean).join(" ");
+    ctx.fillStyle = "#eef3f5";
+    ctx.font = "600 36px Inter";
+    ctx.fillText(auto ? `Tu ${auto} quedó reluciente` : "Tu auto quedó reluciente", size / 2, 760);
+
+    ctx.fillStyle = "#6d7d85";
+    ctx.font = "600 28px Inter";
+    ctx.fillText("Detallados Barraza  ×  Wiwynn", size / 2, 980);
+
+    return new Promise((resolve, reject) => {
+      canvas.toBlob((blob) => {
+        if (!blob) return reject(new Error("No se pudo generar la imagen"));
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = `gracias-${primerNombre.toLowerCase().replace(/[^a-z0-9]+/g, "-")}.png`;
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        setTimeout(() => URL.revokeObjectURL(url), 5000);
+        resolve();
+      }, "image/png");
+    });
   }
 
   function filteredRows() {
@@ -213,12 +319,14 @@
     // loadRows() se dispara solo vía la suscripción de Realtime.
   }
 
-  // Marca el registro como listo Y abre WhatsApp con el aviso, en un solo
-  // clic. window.open debe llamarse de forma síncrona (antes del await)
-  // para que el navegador no lo bloquee como pop-up.
+  // Marca el registro como listo, abre WhatsApp con el aviso y descarga la
+  // imagen de agradecimiento — todo en un clic. window.open debe llamarse
+  // de forma síncrona (antes de cualquier await) para que el navegador no
+  // lo bloquee como pop-up; la imagen sí puede tardar un poco en generarse.
   function marcarListoYAvisar(row) {
     window.open(whatsappLink(row), "_blank", "noopener");
     setEstado(row.id, "listo");
+    generarImagenGracias(row).catch((e) => console.error("No se pudo generar la imagen", e));
   }
 
   function fillActions(wrap, row) {
@@ -238,6 +346,12 @@
       wa.target = "_blank";
       wa.rel = "noopener";
       wrap.appendChild(wa);
+
+      const img = document.createElement("button");
+      img.className = "btn-image";
+      img.textContent = "🖼️ Imagen";
+      img.addEventListener("click", () => generarImagenGracias(row).catch((e) => console.error(e)));
+      wrap.appendChild(img);
 
       const undo = document.createElement("button");
       undo.className = "btn-undo";

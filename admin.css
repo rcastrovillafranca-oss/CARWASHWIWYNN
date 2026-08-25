@@ -345,6 +345,11 @@
   color: #4be18a;
 }
 
+.row__actions .btn-image {
+  background: rgba(34, 193, 224, 0.16);
+  color: var(--cyan-bright);
+}
+
 /* ---------- Danger zone ---------- */
 
 .danger-zone {

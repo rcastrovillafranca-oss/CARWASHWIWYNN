@@ -73,24 +73,42 @@ El número redondo de cada tarjeta es el **turno** — el mismo número que se
 le mostró al cliente al registrarse, así que el equipo puede llamarlo por
 ese número y va a coincidir.
 
-Al tocar **"Listo 💬"**, el panel hace dos cosas a la vez: marca el auto
-como listo y abre WhatsApp en una pestaña nueva con un mensaje ya escrito
-para el cliente — tu equipo solo revisa y le da enviar (nunca se manda
-solo, sin que ustedes lo confirmen). Si necesitas volver a mandarlo
-después, cada auto ya listo tiene un botón **"Reenviar WhatsApp"**, y
-**"Reabrir"** por si lo marcaste listo por error.
+Al tocar **"Listo 💬"**, el panel hace tres cosas a la vez:
+
+1. Marca el auto como listo.
+2. Abre WhatsApp en una pestaña nueva con un mensaje ya escrito para el
+   cliente — tu equipo solo revisa y le da enviar (nunca se manda solo,
+   sin que ustedes lo confirmen).
+3. Descarga automáticamente una **imagen personalizada de agradecimiento**
+   (con tu logo, el nombre del cliente y su auto) a la carpeta de
+   Descargas de la compu.
+
+**Sobre la imagen**: WhatsApp no deja adjuntar una imagen automáticamente
+desde un link — eso solo lo permite su API de negocio (de paga, con cuenta
+verificada), así que el único paso manual que queda es: arrastrar esa
+imagen descargada al chat de WhatsApp antes de darle enviar. Si necesitas
+volver a descargarla o a mandar el mensaje después, cada auto ya listo
+tiene botones **"Reenviar WhatsApp"** y **"🖼️ Imagen"**, y **"Reabrir"**
+por si lo marcaste listo por error.
 
 El mensaje usa el primer nombre del cliente, su marca/modelo en **negritas**
 (WhatsApp interpreta `*así*` como negritas) y saltos de línea para que se
-vea como un mensaje real, no un bloque de texto. Está en la función
+vea como un mensaje real, no un bloque de texto. Evita a propósito emoji
+como 🚗 🕐 🙌 — WhatsApp Desktop en Windows tiene un bug conocido que rompe
+esos emoji (los de "cara/objeto/mano", que usan par sustituto en Unicode)
+en links `wa.me` y los muestra como "??". Está en la función
 `whatsappLink()` al inicio de `admin.js` si quieres cambiar el tono o el
-texto.
+texto — si agregas emoji nuevos, prueba primero que no sean de ese tipo.
 
-El número se arma asumiendo México (lada `52`) para números de 10 dígitos,
-**excepto** los que empiezan con lada `915` (El Paso, TX), a los que se les
-pone `+1` en vez de `+52` — es la constante `WHATSAPP_US_AREA_CODES` justo
-arriba de `whatsappLink()`; agrega más ladas ahí si tienen clientes de
-otras zonas de EE. UU.
+La imagen de agradecimiento se genera en el navegador con Canvas (función
+`generarImagenGracias()` en `admin.js`) — cambia colores, textos o el
+tamaño del logo ahí si quieres ajustar el diseño.
+
+El número de WhatsApp se arma asumiendo México (lada `52`) para números de
+10 dígitos, **excepto** los que empiezan con lada `915` (El Paso, TX), a
+los que se les pone `+1` en vez de `+52` — es la constante
+`WHATSAPP_US_AREA_CODES` justo arriba de `whatsappLink()`; agrega más
+ladas ahí si tienen clientes de otras zonas de EE. UU.
 
 Hasta abajo del panel hay una **zona de peligro**: el botón "Reiniciar
 todos los registros" borra permanentemente toda la tabla (hoy y días
