@@ -317,63 +317,30 @@
     setTimeout(() => URL.revokeObjectURL(url), 5000);
   }
 
-  // Genera la imagen y la manda de la forma más directa que el navegador
-  // permita:
-  //  - Celular (Android/iPhone): usa el "compartir" nativo del sistema con
-  //    la imagen adjunta — el usuario elige WhatsApp y listo, se manda la
-  //    foto de verdad, no solo el texto.
-  //  - Computadora: los navegadores de escritorio no dejan compartir
-  //    archivos así, así que abrimos WhatsApp con el mensaje ya escrito
-  //    (al número correcto) y descargamos la imagen para adjuntarla a mano.
-  async function enviarListoConImagen(row, waTab) {
-    const canvas = await generarCanvasGracias(row);
-    const blob = await canvasToBlob(canvas);
-    const archivo = new File([blob], nombreArchivo(row), { type: "image/png" });
-    const texto = mensajeListo(row);
-
-    // waTab: una pestaña en blanco ya reservada (ver abajo) para cuando el
-    // navegador no puede compartir el archivo directo — así, al navegarla
-    // más abajo, el navegador no la trata como pop-up (eso solo se evita
-    // si la pestaña se abrió dentro del mismo clic del usuario).
-    if (!waTab && navigator.canShare && navigator.canShare({ files: [archivo] })) {
-      try {
-        await navigator.share({ files: [archivo], text: texto, title: "Detallados Barraza" });
-        return;
-      } catch (e) {
-        if (e && e.name === "AbortError") return; // el usuario cerró el menú de compartir
-        console.error("No se pudo compartir la imagen, uso el respaldo", e);
-      }
-    }
-
-    const link = whatsappLink(row);
-    if (waTab) {
-      waTab.location = link;
-    } else {
-      window.open(link, "_blank", "noopener");
-    }
-    descargarBlob(blob, nombreArchivo(row));
-  }
-
-  function puedeCompartirArchivo() {
+  // Siempre abre el chat del cliente CORRECTO (por su número, vía wa.me)
+  // con el mensaje ya escrito, y descarga la imagen para que se arrastre
+  // ahí mismo. Nada de "compartir" genérico del sistema: eso abre un
+  // buscador de contactos en blanco y no hay forma de saber a quién elegir
+  // — con wa.me siempre es el número exacto del cliente, sin adivinar.
+  //
+  // La pestaña de WhatsApp se reserva ANTES de generar la imagen (dentro
+  // del clic del usuario) para que el navegador no la bloquee como pop-up;
+  // luego solo se navega a la URL final.
+  async function enviarConImagen(row) {
+    const waTab = window.open("", "_blank");
     try {
-      const prueba = new File([""], "x.png", { type: "image/png" });
-      return !!(navigator.canShare && navigator.canShare({ files: [prueba] }));
+      const canvas = await generarCanvasGracias(row);
+      const blob = await canvasToBlob(canvas);
+      if (waTab) {
+        waTab.location = whatsappLink(row);
+      } else {
+        window.open(whatsappLink(row), "_blank");
+      }
+      descargarBlob(blob, nombreArchivo(row));
     } catch (e) {
-      return false;
+      console.error("No se pudo generar/enviar la imagen", e);
+      if (waTab) waTab.location = whatsappLink(row);
     }
-  }
-
-  // Punto de entrada compartido por "Listo" y "Reenviar": si el navegador
-  // puede compartir archivos (celular), no abre nada — el share nativo se
-  // encarga. Si no (computadora), reserva la pestaña de WhatsApp DENTRO del
-  // clic del usuario para que no se bloquee como pop-up.
-  function enviarConImagen(row) {
-    // Ojo: "noopener" hace que window.open() regrese null (no hay
-    // referencia a la ventana), así que aquí NO se usa — si no, nunca
-    // podríamos navegar esta pestaña reservada más abajo. Como el destino
-    // (wa.me) es un dominio conocido y confiable, no hay riesgo real.
-    const waTab = puedeCompartirArchivo() ? null : window.open("", "_blank");
-    enviarListoConImagen(row, waTab).catch((e) => console.error("No se pudo enviar la imagen", e));
   }
 
   function filteredRows() {

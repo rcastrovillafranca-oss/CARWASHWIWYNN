@@ -73,21 +73,22 @@ El número redondo de cada tarjeta es el **turno** — el mismo número que se
 le mostró al cliente al registrarse, así que el equipo puede llamarlo por
 ese número y va a coincidir.
 
-Al tocar **"Listo 💬"**, el panel marca el auto como listo y genera una
-**imagen personalizada de agradecimiento** (tu logo, el nombre del cliente
-y su auto), y la manda por el mejor camino que el navegador permita:
+Al tocar **"Listo 💬"**, el panel marca el auto como listo, abre WhatsApp
+**directo en el chat del cliente correcto** (usando su número, vía wa.me —
+nunca un buscador de contactos genérico) con el mensaje ya escrito, y
+descarga una **imagen personalizada de agradecimiento** (tu logo, el
+nombre del cliente y su auto) para que tu equipo la arrastre a ese mismo
+chat antes de enviar.
 
-- **Desde el celular** (Android/iPhone): usa el botón nativo de "Compartir"
-  del sistema con la imagen ya adjunta — tu equipo elige WhatsApp y el
-  contacto, y se manda la foto de verdad, no solo texto. Esto es lo más
-  parecido a "automático" que se puede lograr sin la API de negocio de
-  Meta (que es de paga y requiere verificación — investigamos el costo:
-  es barato, ~$0.01 USD por mensaje, pero el trámite de verificación con
-  Meta puede tardar días/semanas y no depende de nosotros).
-- **Desde la computadora**: los navegadores de escritorio no dejan
-  compartir archivos así, así que se abre WhatsApp con el mensaje ya
-  escrito (al número correcto) y se descarga la imagen — el único paso
-  manual que queda es arrastrarla al chat antes de enviar.
+Se descartó a propósito usar el botón nativo de "Compartir" del celular:
+aunque sí adjunta la imagen automáticamente, abre un buscador de contactos
+en blanco (no hay forma de decirle a quién enviar), así que tu equipo
+tendría que adivinar el contacto correcto — peor que el paso manual de
+arrastrar una imagen a un chat que ya está abierto en la persona correcta.
+Mandar imagen + texto 100% automático, ya dirigido al número exacto, solo
+se puede con la API de negocio de Meta (de paga, con verificación — el
+costo real es bajo, ~$0.01 USD por mensaje, pero el trámite con Meta puede
+tardar días o semanas y no depende de nosotros).
 
 Si necesitas volver a mandarlo después, cada auto ya listo tiene un botón
 **"Reenviar"** (repite exactamente el mismo proceso) y **"Reabrir"** por si
