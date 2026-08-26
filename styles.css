@@ -446,7 +446,8 @@ img { max-width: 100%; display: block; }
 
 .field { display: flex; flex-direction: column; gap: 8px; }
 
-.field label {
+.field label,
+.field__label {
   font-size: 13px;
   font-weight: 600;
   color: var(--silver-dim);
@@ -476,7 +477,76 @@ img { max-width: 100%; display: block; }
   gap: 12px;
 }
 
+.day-picker {
+  display: flex;
+  gap: 10px;
+  overflow-x: auto;
+  padding: 2px 2px 6px;
+  scrollbar-width: thin;
+}
+
+.day-picker__empty {
+  margin: 4px 0;
+  font-size: 13.5px;
+  color: var(--silver-dim);
+}
+
+.day-chip {
+  flex: none;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1px;
+  width: 84px;
+  background: var(--black);
+  border: 1.5px solid rgba(255, 255, 255, 0.12);
+  border-radius: 14px;
+  padding: 12px 8px;
+  text-align: center;
+  cursor: pointer;
+  color: var(--silver-dim);
+  font-family: var(--font-body);
+  transition: border-color 0.15s ease, background 0.15s ease, color 0.15s ease;
+}
+
+.day-chip__dow {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.day-chip__num {
+  font-family: var(--font-display);
+  font-size: 26px;
+  font-weight: 700;
+  line-height: 1.15;
+  color: var(--silver);
+}
+
+.day-chip__mes {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.day-chip__hora {
+  margin-top: 4px;
+  font-size: 10.5px;
+  color: var(--silver-faint);
+}
+
+.day-chip.selected {
+  border-color: var(--cyan);
+  background: rgba(34, 193, 224, 0.12);
+  color: var(--silver);
+}
+
+.day-chip.selected .day-chip__num { color: var(--cyan-bright); }
+
 .form-registro__submit { margin-top: 4px; width: 100%; }
+
+.form-registro__submit:disabled { opacity: 0.5; cursor: not-allowed; }
 
 .form-error {
   color: #ff8a8a;

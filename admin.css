@@ -183,6 +183,98 @@
   color: var(--silver-dim);
 }
 
+/* ---------- Días disponibles ---------- */
+
+.dias-panel {
+  background: var(--black-card);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: var(--radius-md);
+  padding: 18px 16px;
+  margin-bottom: 20px;
+}
+
+.dias-panel__title {
+  margin: 0 0 2px;
+  font-family: var(--font-display);
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  font-size: 14px;
+  color: var(--silver);
+}
+
+.dias-panel__hint {
+  margin: 0 0 14px;
+  font-size: 12.5px;
+  color: var(--silver-dim);
+}
+
+.dia-form {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr auto;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.dia-form input {
+  background: var(--black);
+  border: 1.5px solid rgba(255, 255, 255, 0.12);
+  border-radius: 10px;
+  padding: 9px 8px;
+  font-size: 13px;
+  color: var(--silver);
+  font-family: var(--font-body);
+  outline: none;
+  min-width: 0;
+}
+
+.dia-form input:focus { border-color: var(--cyan); }
+.dia-form .btn { white-space: nowrap; }
+
+.dias-lista {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.dias-lista__empty {
+  font-size: 12.5px;
+  color: var(--silver-dim);
+}
+
+.dia-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--black);
+  border: 1px solid rgba(34, 193, 224, 0.25);
+  border-radius: 999px;
+  padding: 6px 8px 6px 12px;
+  font-size: 12.5px;
+  color: var(--silver);
+}
+
+.dia-item__hora { color: var(--silver-dim); }
+
+.dia-item__quitar {
+  background: rgba(255, 90, 90, 0.15);
+  color: #ff8a8a;
+  border: none;
+  border-radius: 50%;
+  width: 20px;
+  height: 20px;
+  line-height: 1;
+  font-size: 13px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+@media (max-width: 480px) {
+  .dia-form { grid-template-columns: 1fr 1fr; }
+  .dia-form .btn { grid-column: 1 / -1; }
+}
+
 /* ---------- Tabs ---------- */
 
 .tabs {
@@ -311,7 +403,10 @@
 .row__tel:active { color: var(--cyan-bright); }
 
 .row__tipo::before { content: "· "; }
+.row__fecha::before { content: "· "; }
 .row__hora::before { content: "· "; }
+
+.row__fecha { color: var(--lime); font-weight: 600; }
 
 .row__actions { flex: none; display: flex; gap: 6px; }
 

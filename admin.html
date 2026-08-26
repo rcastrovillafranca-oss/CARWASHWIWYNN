@@ -83,6 +83,21 @@
     </div>
   </section>
 
+  <section class="dias-panel">
+    <p class="dias-panel__title">Días disponibles</p>
+    <p class="dias-panel__hint">Solo estos días van a poder elegir tus clientes al registrarse.</p>
+
+    <form id="dia-form" class="dia-form">
+      <input type="date" id="dia-fecha" required>
+      <input type="time" id="dia-inicio" value="09:00" aria-label="Hora de inicio">
+      <input type="time" id="dia-fin" value="14:00" aria-label="Hora de fin">
+      <button type="submit" class="btn btn--primary btn--sm">Agregar</button>
+    </form>
+    <p class="form-error hidden" id="dia-error">No se pudo agregar el día.</p>
+
+    <div class="dias-lista" id="dias-lista"></div>
+  </section>
+
   <nav class="tabs" id="tabs" role="tablist" aria-label="Filtrar cola">
     <button type="button" class="tab active" data-filter="activos" role="tab" aria-selected="true">En cola</button>
     <button type="button" class="tab" data-filter="listo" role="tab" aria-selected="false">Listos hoy</button>
@@ -139,6 +154,7 @@
       <div class="row__meta">
         <a class="row__tel" href="#"></a>
         <span class="row__tipo"></span>
+        <span class="row__fecha"></span>
         <span class="row__hora"></span>
       </div>
     </div>

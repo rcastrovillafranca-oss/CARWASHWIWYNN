@@ -56,19 +56,38 @@ usa para entrar en `/admin`.
 ## 4. Operar el día a día
 
 Entra a `tu-sitio.netlify.app/admin` e inicia sesión con el usuario que
-creaste en el paso 3. Ahí tu equipo ve:
+creaste en el paso 3.
 
-- **En cola** — quién sigue, en orden (el primero es el siguiente auto).
-  El flujo es simple, un solo botón: **"Listo 💬"**.
-- **Listos hoy** — los autos ya entregados hoy.
+### Días disponibles
+
+Arriba del todo hay un panel **"Días disponibles"**: ahí agregas qué días
+(y en qué horario) van a estar lavando autos — fecha, hora de inicio y hora
+de fin, botón **Agregar**. Cada día que agregues aparece como una etiqueta
+con una × para quitarlo cuando ya pasó o si te equivocaste.
+
+**La página pública solo deja escoger uno de esos días** — si no agregas
+ninguno, nadie puede registrarse (el formulario se deshabilita solo, con un
+aviso). El turno de cada cliente ("turno 5") se cuenta por día de servicio,
+no por cuándo se registró: si alguien se anota hoy para el día que abras la
+próxima semana, su turno se calcula dentro de ese día, no del de hoy. Así
+mismo, los números de arriba del panel (**En espera**, **Listos hoy**,
+**Ingresos hoy**) siempre reflejan el día de HOY en el calendario, sin
+importar cuándo se haya registrado cada quien.
+
+### La cola
+
+Ahí tu equipo ve:
+
+- **En cola** — todos los autos pendientes, agrupados por día de servicio
+  (el día más próximo primero) y dentro de cada día en orden de turno. El
+  flujo es simple, un solo botón: **"Listo 💬"**.
+- **Listos hoy** — los autos de HOY que ya se entregaron.
 - **Todos** — historial completo.
-- Un resumen arriba con cuántos autos están en espera, cuántos se
-  atendieron hoy y cuánto se ha facturado hoy.
 
 Cada tarjeta trae el teléfono como link (toca para llamar), la marca/modelo
-del auto y hace cuánto se registró. Todo se actualiza solo en tiempo real
-para todo el equipo (gracias a Supabase Realtime) — no hace falta refrescar
-la página.
+del auto, el día para el que se registró y hace cuánto se hizo el
+registro. Todo se actualiza solo en tiempo real para todo el equipo
+(gracias a Supabase Realtime) — no hace falta refrescar la página.
 
 El número redondo de cada tarjeta es el **turno** — el mismo número que se
 le mostró al cliente al registrarse, así que el equipo puede llamarlo por
@@ -190,7 +209,7 @@ app.js                           Lógica de index.html (formulario + estadístic
 admin.js                         Lógica de admin.html (login, cola, cambios de estado)
 config.js                        Credenciales de Supabase (edítalo, ver paso 2)
 .env.example                     Qué variables existen y para qué sirve cada una
-supabase/schema.sql              Tabla, función registrar_lavado() y permisos (RLS)
+supabase/schema.sql              Tablas (registros, dias_disponibles), registrar_lavado() y permisos (RLS)
 netlify.toml                     Deploy + redirect /admin → /admin.html
 assets/                          Logos (ya con fondo transparente)
 scripts/quitar_fondo_logo.py     Utilidad para quitarle el fondo blanco a un logo nuevo
@@ -208,8 +227,6 @@ python scripts/quitar_fondo_logo.py assets/logo-nuevo.jpg assets/logo-nuevo.png
 ## Personalizar precios o servicios incluidos
 
 Los precios y el checklist de servicios (Lavado exterior, Aspirado, Armor
-All, Aroma) están tanto en las tarjetas de precio como en los botones del
-formulario dentro de `index.html`. Si cambian, actualiza:
-
-- Las dos `<article class="price-card">` en la sección `#precios`.
-- Los dos `<button class="toggle">` dentro de `#toggle-tipo`.
+All, Aroma) están en las dos `<article class="price-card">` de la sección
+`#precios` en `index.html` — el cliente elige tocando la tarjeta (ver
+`data-tipo` / `data-precio` en cada una), no hay un selector aparte.

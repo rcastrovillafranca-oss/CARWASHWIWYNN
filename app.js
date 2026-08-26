@@ -71,12 +71,129 @@
     });
   });
 
+  // ---------- Día de servicio ----------
+
+  const DOW_LABELS = ["DOM", "LUN", "MAR", "MIÉ", "JUE", "VIE", "SÁB"];
+  const MES_LABELS = ["ene", "feb", "mar", "abr", "may", "jun", "jul", "ago", "sep", "oct", "nov", "dic"];
+  const DOW_FULL = ["domingo", "lunes", "martes", "miércoles", "jueves", "viernes", "sábado"];
+  const MES_FULL = [
+    "enero", "febrero", "marzo", "abril", "mayo", "junio",
+    "julio", "agosto", "septiembre", "octubre", "noviembre", "diciembre",
+  ];
+
+  // "2026-09-02" -> Date en horario LOCAL (no UTC), para que el día de la
+  // semana no se recorra por el huso horario del navegador.
+  function parseFechaLocal(fecha) {
+    const [y, m, d] = fecha.split("-").map(Number);
+    return new Date(y, m - 1, d);
+  }
+
+  function formatHora(hora) {
+    if (!hora) return "";
+    const [h, m] = hora.split(":");
+    const hn = Number(h);
+    const ampm = hn >= 12 ? "pm" : "am";
+    const h12 = hn % 12 === 0 ? 12 : hn % 12;
+    return `${h12}${m !== "00" ? ":" + m : ""}${ampm}`;
+  }
+
+  function formatDayLong(fecha) {
+    const d = parseFechaLocal(fecha);
+    return `${DOW_FULL[d.getDay()]} ${d.getDate()} de ${MES_FULL[d.getMonth()]}`;
+  }
+
+  const dayPicker = document.getElementById("day-picker");
+  const dayPickerEmpty = document.getElementById("day-picker-empty");
+  const fechaInput = document.getElementById("fecha_servicio");
+  let diasDisponibles = [];
+
+  function selectDay(chip, dia) {
+    dayPicker.querySelectorAll(".day-chip").forEach((c) => {
+      c.classList.remove("selected");
+      c.setAttribute("aria-checked", "false");
+    });
+    chip.classList.add("selected");
+    chip.setAttribute("aria-checked", "true");
+    fechaInput.value = dia.fecha;
+  }
+
+  function renderDayPicker() {
+    dayPicker.querySelectorAll(".day-chip").forEach((c) => c.remove());
+
+    if (diasDisponibles.length === 0) {
+      dayPickerEmpty.textContent = "No hay días disponibles por el momento. Vuelve a checar más tarde.";
+      dayPickerEmpty.classList.remove("hidden");
+      submitBtn.disabled = true;
+      return;
+    }
+
+    dayPickerEmpty.classList.add("hidden");
+    submitBtn.disabled = false;
+
+    diasDisponibles.forEach((dia, i) => {
+      const d = parseFechaLocal(dia.fecha);
+      const chip = document.createElement("button");
+      chip.type = "button";
+      chip.className = "day-chip";
+      chip.setAttribute("role", "radio");
+      chip.setAttribute("aria-checked", "false");
+      chip.innerHTML = `
+        <span class="day-chip__dow">${DOW_LABELS[d.getDay()]}</span>
+        <span class="day-chip__num">${d.getDate()}</span>
+        <span class="day-chip__mes">${MES_LABELS[d.getMonth()]}</span>
+        ${dia.hora_inicio ? `<span class="day-chip__hora">${formatHora(dia.hora_inicio)}${dia.hora_fin ? "–" + formatHora(dia.hora_fin) : ""}</span>` : ""}
+      `;
+      chip.addEventListener("click", () => selectDay(chip, dia));
+      dayPicker.appendChild(chip);
+      if (i === 0) selectDay(chip, dia);
+    });
+  }
+
+  async function cargarDiasDisponibles() {
+    if (!client) {
+      // Modo demo (Supabase no configurado): unos días de ejemplo para
+      // poder probar el diseño.
+      const hoy = new Date();
+      diasDisponibles = [1, 3, 5].map((offset) => {
+        const d = new Date(hoy);
+        d.setDate(d.getDate() + offset);
+        return { fecha: d.toISOString().slice(0, 10), hora_inicio: "09:00", hora_fin: "14:00" };
+      });
+      renderDayPicker();
+      return;
+    }
+
+    try {
+      const hoyISO = new Date().toISOString().slice(0, 10);
+      const { data, error } = await client
+        .from("dias_disponibles")
+        .select("fecha, hora_inicio, hora_fin")
+        .gte("fecha", hoyISO)
+        .order("fecha", { ascending: true });
+
+      if (error) throw error;
+      diasDisponibles = data || [];
+      renderDayPicker();
+    } catch (err) {
+      console.error("No se pudieron cargar los días disponibles", err);
+      dayPickerEmpty.textContent = "No se pudieron cargar los días disponibles.";
+    }
+  }
+
+  cargarDiasDisponibles();
+
   form.addEventListener("submit", async (e) => {
     e.preventDefault();
     errorMsg.classList.add("hidden");
 
     const data = Object.fromEntries(new FormData(form).entries());
     data.precio = Number(data.precio);
+
+    if (!data.fecha_servicio) {
+      dayPickerEmpty.classList.remove("hidden");
+      dayPickerEmpty.textContent = "Elige un día antes de continuar.";
+      return;
+    }
 
     submitBtn.disabled = true;
     submitLabel.textContent = "Registrando...";
@@ -97,6 +214,7 @@
           p_precio: data.precio,
           p_marca: data.marca,
           p_modelo: data.modelo,
+          p_fecha_servicio: data.fecha_servicio,
         });
 
         if (error) throw error;
@@ -111,6 +229,7 @@
       document.getElementById("success-nombre").textContent = data.nombre;
       document.getElementById("success-turno").textContent = turno;
       document.getElementById("success-auto").textContent = `${data.marca} ${data.modelo}`;
+      document.getElementById("success-fecha").textContent = formatDayLong(data.fecha_servicio);
 
       const warning = document.getElementById("success-warning");
       if (carrosAdelante >= WARNING_THRESHOLD) {
@@ -135,6 +254,7 @@
   document.getElementById("reset-btn").addEventListener("click", () => {
     form.reset();
     selectCard(priceCards[0]);
+    renderDayPicker();
     success.classList.add("hidden");
     form.classList.remove("hidden");
     document.getElementById("registro").scrollIntoView({ behavior: "smooth" });

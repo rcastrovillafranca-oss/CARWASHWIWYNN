@@ -39,7 +39,7 @@
       <div class="how__step reveal">
         <div class="how__num">1</div>
         <h3>Regístrate</h3>
-        <p>Escanea el QR, elige tu tipo de vehículo y completa tus datos.</p>
+        <p>Escanea el QR, elige el día que te quede mejor y completa tus datos.</p>
       </div>
       <div class="how__step reveal">
         <div class="how__num">2</div>
@@ -99,6 +99,14 @@
         <input id="telefono" name="telefono" type="tel" autocomplete="tel" required placeholder="10 dígitos" inputmode="numeric">
       </div>
 
+      <div class="field">
+        <span class="field__label">¿Qué día prefieres?</span>
+        <div class="day-picker" id="day-picker" role="radiogroup" aria-label="Día de servicio">
+          <p class="day-picker__empty" id="day-picker-empty">Cargando días disponibles…</p>
+        </div>
+        <input type="hidden" name="fecha_servicio" id="fecha_servicio" value="">
+      </div>
+
       <div class="field-row">
         <div class="field">
           <label for="marca">Marca</label>
@@ -113,7 +121,7 @@
       <input type="hidden" name="tipo_auto" id="tipo_auto" value="chico">
       <input type="hidden" name="precio" id="precio" value="170">
 
-      <button type="submit" class="btn btn--primary form-registro__submit" id="submit-btn">
+      <button type="submit" class="btn btn--primary form-registro__submit" id="submit-btn" disabled>
         <span id="submit-label">Confirmar registro · Carro chico · $170</span>
       </button>
       <p class="form-error hidden" id="form-error">Ocurrió un error al registrar tu carro. Intenta de nuevo.</p>
@@ -123,7 +131,7 @@
       <p class="success__eyebrow">Tu turno</p>
       <p class="success__turno">#<span id="success-turno">–</span></p>
       <h3>¡Gracias, <span id="success-nombre"></span>!</h3>
-      <p>Registramos tu <strong id="success-auto"></strong>.<br>Te contactamos al teléfono que dejaste cuando esté listo.</p>
+      <p>Registramos tu <strong id="success-auto"></strong> para el <strong id="success-fecha"></strong>.<br>Te contactamos al teléfono que dejaste cuando esté listo.</p>
 
       <div class="success__warning hidden" id="success-warning">
         <span aria-hidden="true">⏳</span>

@@ -61,6 +61,7 @@
     dashView.classList.remove("hidden");
     loadRows();
     subscribeRealtime();
+    cargarDiasDisponibles();
   }
 
   loginForm.addEventListener("submit", async (e) => {
@@ -95,7 +96,7 @@
   async function loadRows() {
     const { data, error } = await client
       .from("registros")
-      .select("id, created_at, nombre, telefono, marca, modelo, tipo_auto, precio, turno, estado")
+      .select("id, created_at, nombre, telefono, marca, modelo, tipo_auto, precio, turno, estado, fecha_servicio")
       .order("created_at", { ascending: true });
 
     if (error) {
@@ -116,21 +117,117 @@
       .subscribe();
   }
 
-  // ---------- Stats ----------
+  // ---------- Días disponibles ----------
 
-  function isToday(iso) {
-    const d = new Date(iso);
-    const now = new Date();
-    return (
-      d.getFullYear() === now.getFullYear() &&
-      d.getMonth() === now.getMonth() &&
-      d.getDate() === now.getDate()
-    );
+  const diaForm = document.getElementById("dia-form");
+  const diaFecha = document.getElementById("dia-fecha");
+  const diaInicio = document.getElementById("dia-inicio");
+  const diaFin = document.getElementById("dia-fin");
+  const diaError = document.getElementById("dia-error");
+  const diasLista = document.getElementById("dias-lista");
+
+  function formatFechaCorta(fecha) {
+    const [y, m, d] = fecha.split("-").map(Number);
+    const date = new Date(y, m - 1, d);
+    const dow = ["dom", "lun", "mar", "mié", "jue", "vie", "sáb"][date.getDay()];
+    const mes = ["ene", "feb", "mar", "abr", "may", "jun", "jul", "ago", "sep", "oct", "nov", "dic"][date.getMonth()];
+    return `${dow} ${date.getDate()} ${mes}`;
   }
 
+  async function cargarDiasDisponibles() {
+    const hoy = new Date().toISOString().slice(0, 10);
+    const { data, error } = await client
+      .from("dias_disponibles")
+      .select("id, fecha, hora_inicio, hora_fin")
+      .gte("fecha", hoy)
+      .order("fecha", { ascending: true });
+
+    if (error) {
+      console.error("No se pudieron cargar los días disponibles", error);
+      return;
+    }
+
+    renderDiasDisponibles(data || []);
+  }
+
+  function renderDiasDisponibles(dias) {
+    diasLista.innerHTML = "";
+
+    if (dias.length === 0) {
+      const p = document.createElement("p");
+      p.className = "dias-lista__empty";
+      p.textContent = "Todavía no agregas ningún día. Los clientes no podrán registrarse hasta que agregues al menos uno.";
+      diasLista.appendChild(p);
+      return;
+    }
+
+    dias.forEach((dia) => {
+      const item = document.createElement("span");
+      item.className = "dia-item";
+
+      const texto = document.createElement("span");
+      let html = formatFechaCorta(dia.fecha);
+      if (dia.hora_inicio) {
+        html += ` <span class="dia-item__hora">${dia.hora_inicio.slice(0, 5)}${dia.hora_fin ? "–" + dia.hora_fin.slice(0, 5) : ""}</span>`;
+      }
+      texto.innerHTML = html;
+      item.appendChild(texto);
+
+      const quitar = document.createElement("button");
+      quitar.type = "button";
+      quitar.className = "dia-item__quitar";
+      quitar.textContent = "×";
+      quitar.setAttribute("aria-label", `Quitar ${formatFechaCorta(dia.fecha)}`);
+      quitar.addEventListener("click", async () => {
+        const { error } = await client.from("dias_disponibles").delete().eq("id", dia.id);
+        if (error) console.error("No se pudo quitar el día", error);
+        cargarDiasDisponibles();
+      });
+      item.appendChild(quitar);
+
+      diasLista.appendChild(item);
+    });
+  }
+
+  diaForm.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    diaError.classList.add("hidden");
+
+    if (!diaFecha.value) return;
+
+    const { error } = await client.from("dias_disponibles").insert({
+      fecha: diaFecha.value,
+      hora_inicio: diaInicio.value || null,
+      hora_fin: diaFin.value || null,
+    });
+
+    if (error) {
+      console.error("No se pudo agregar el día", error);
+      diaError.textContent = error.code === "23505" ? "Ese día ya estaba agregado." : "No se pudo agregar el día.";
+      diaError.classList.remove("hidden");
+      return;
+    }
+
+    diaForm.reset();
+    diaInicio.value = "09:00";
+    diaFin.value = "14:00";
+    cargarDiasDisponibles();
+  });
+
+  // ---------- Stats ----------
+
+  function todayISO() {
+    const d = new Date();
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+  }
+
+  // Todo esto se mide por "día de SERVICIO" (fecha_servicio), no por
+  // cuándo se registró el cliente — con días agendados a futuro, lo que
+  // importa operativamente es qué toca hoy, no cuándo se apuntaron.
   function renderStats() {
-    const enEspera = rows.filter((r) => r.estado !== "listo").length;
-    const listosHoy = rows.filter((r) => r.estado === "listo" && isToday(r.created_at));
+    const deHoy = rows.filter((r) => r.fecha_servicio === todayISO());
+    const enEspera = deHoy.filter((r) => r.estado !== "listo").length;
+    const listosHoy = deHoy.filter((r) => r.estado === "listo");
     const ingresosHoy = listosHoy.reduce((sum, r) => sum + (r.precio || 0), 0);
 
     document.getElementById("d-espera").textContent = enEspera;
@@ -373,12 +470,22 @@
 
   function filteredRows() {
     if (activeFilter === "listo") {
-      return rows.filter((r) => r.estado === "listo" && isToday(r.created_at)).slice().reverse();
+      return rows.filter((r) => r.estado === "listo" && r.fecha_servicio === todayISO()).slice().reverse();
     }
     if (activeFilter === "todos") {
       return rows.slice().reverse();
     }
-    return rows.filter((r) => r.estado !== "listo");
+    // Agrupado por día de servicio (el más próximo primero) y, dentro de
+    // cada día, por orden de turno — así se ve el día de hoy junto y
+    // completo antes de pasar al siguiente.
+    return rows
+      .filter((r) => r.estado !== "listo")
+      .slice()
+      .sort((a, b) => {
+        const f = (a.fecha_servicio || "").localeCompare(b.fecha_servicio || "");
+        if (f !== 0) return f;
+        return new Date(a.created_at) - new Date(b.created_at);
+      });
   }
 
   async function setEstado(id, estado) {
@@ -445,6 +552,7 @@
       tel.href = `tel:${row.telefono.replace(/\D/g, "")}`;
 
       node.querySelector(".row__tipo").textContent = tipoLabel(row.tipo_auto);
+      node.querySelector(".row__fecha").textContent = row.fecha_servicio ? formatFechaCorta(row.fecha_servicio) : "";
       node.querySelector(".row__hora").textContent = relativeTime(row.created_at);
 
       fillActions(node.querySelector(".row__actions"), row);

@@ -13,6 +13,7 @@ create table if not exists registros (
   tipo_auto text not null check (tipo_auto in ('chico', 'troca')),
   precio integer not null,
   turno integer,
+  fecha_servicio date,
   estado text not null default 'pendiente' check (estado in ('pendiente', 'en_proceso', 'listo'))
 );
 
@@ -20,16 +21,54 @@ create table if not exists registros (
 alter table registros add column if not exists marca text not null default '';
 alter table registros add column if not exists modelo text not null default '';
 alter table registros add column if not exists turno integer;
+alter table registros add column if not exists fecha_servicio date;
 
 alter table registros enable row level security;
+
+-- ---------- Días disponibles ----------
+--
+-- Tú controlas aquí (desde /admin) qué días vas a lavar autos y en qué
+-- horario. La página pública solo deja escoger un día de esta lista — así
+-- nunca se registra un auto para un día en que no vas a estar.
+create table if not exists dias_disponibles (
+  id uuid primary key default gen_random_uuid(),
+  fecha date not null unique,
+  hora_inicio time,
+  hora_fin time,
+  created_at timestamptz not null default now()
+);
+
+alter table dias_disponibles enable row level security;
+
+-- No tiene datos personales, así que se puede leer libremente: el sitio
+-- público la necesita para mostrar las opciones de día, y el panel para
+-- administrarla.
+drop policy if exists "leer dias disponibles" on dias_disponibles;
+create policy "leer dias disponibles"
+on dias_disponibles for select
+to anon, authenticated
+using (true);
+
+drop policy if exists "admin crear dias disponibles" on dias_disponibles;
+create policy "admin crear dias disponibles"
+on dias_disponibles for insert
+to authenticated
+with check (true);
+
+drop policy if exists "admin borrar dias disponibles" on dias_disponibles;
+create policy "admin borrar dias disponibles"
+on dias_disponibles for delete
+to authenticated
+using (true);
 
 -- ---------- Registro público ----------
 --
 -- La página pública YA NO inserta directo a la tabla ni la lee. En vez de
 -- eso llama a esta función (RPC) que:
---   1. calcula el "turno" del día (se reinicia solo cada medianoche),
+--   1. calcula el "turno" del día de SERVICIO elegido (empieza en 1 en
+--      cada día distinto de dias_disponibles),
 --   2. inserta el registro,
---   3. cuenta cuántos autos EN ESPERA hay antes que el suyo,
+--   3. cuenta cuántos autos EN ESPERA hay antes que el suyo ESE mismo día,
 -- y regresa solo esos 2 números (nunca nombres/teléfonos de otras personas).
 --
 -- Al ser "security definer" no necesita ninguna política de INSERT/SELECT
@@ -38,13 +77,18 @@ alter table registros enable row level security;
 drop policy if exists "insertar registros publicos" on registros;
 drop policy if exists "leer registros publicos" on registros;
 
+-- Se elimina la versión anterior (6 parámetros, sin fecha) por si ya
+-- existía, para poder cambiar la firma de la función sin conflicto.
+drop function if exists registrar_lavado(text, text, text, integer, text, text);
+
 create or replace function registrar_lavado(
   p_nombre text,
   p_telefono text,
   p_tipo_auto text,
   p_precio integer,
   p_marca text,
-  p_modelo text
+  p_modelo text,
+  p_fecha_servicio date
 )
 returns table(turno integer, carros_adelante integer)
 language plpgsql
@@ -56,24 +100,29 @@ declare
   v_created_at timestamptz;
   v_adelante integer;
 begin
+  -- El turno es por día de SERVICIO (el que eligió el cliente), no por
+  -- día de registro — así "turno 5" siempre significa "el 5to auto de
+  -- ese día en particular", sin importar cuándo se haya registrado.
   select coalesce(max(r.turno), 0) + 1 into v_turno
   from registros r
-  where r.created_at >= date_trunc('day', now());
+  where r.fecha_servicio = p_fecha_servicio;
 
-  insert into registros (nombre, telefono, tipo_auto, precio, marca, modelo, turno)
-  values (p_nombre, p_telefono, p_tipo_auto, p_precio, p_marca, p_modelo, v_turno)
+  insert into registros (nombre, telefono, tipo_auto, precio, marca, modelo, turno, fecha_servicio)
+  values (p_nombre, p_telefono, p_tipo_auto, p_precio, p_marca, p_modelo, v_turno, p_fecha_servicio)
   returning registros.created_at into v_created_at;
 
   select count(*) into v_adelante
   from registros r
-  where r.estado = 'pendiente' and r.created_at < v_created_at;
+  where r.fecha_servicio = p_fecha_servicio
+    and r.estado = 'pendiente'
+    and r.created_at < v_created_at;
 
   return query select v_turno, v_adelante;
 end;
 $$;
 
-revoke all on function registrar_lavado(text, text, text, integer, text, text) from public;
-grant execute on function registrar_lavado(text, text, text, integer, text, text) to anon;
+revoke all on function registrar_lavado(text, text, text, integer, text, text, date) from public;
+grant execute on function registrar_lavado(text, text, text, integer, text, text, date) to anon;
 
 -- ---------- Panel de administración ----------
 --
