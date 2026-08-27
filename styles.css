@@ -209,6 +209,11 @@ img { max-width: 100%; display: block; }
   color: var(--silver);
 }
 
+.section-title--big {
+  font-size: 34px;
+  letter-spacing: 0.02em;
+}
+
 .section-title::after {
   content: "";
   position: absolute;
@@ -866,6 +871,7 @@ img { max-width: 100%; display: block; }
   .success__card { padding: 26px 16px 22px; }
   .success__divider { margin-left: -16px; margin-right: -16px; }
   .success__turno { font-size: 118px; }
+  .section-title--big { font-size: 26px; }
 }
 
 @media (min-width: 560px) {

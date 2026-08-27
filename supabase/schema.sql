@@ -67,6 +67,13 @@ on dias_disponibles for delete
 to authenticated
 using (true);
 
+drop policy if exists "admin editar dias disponibles" on dias_disponibles;
+create policy "admin editar dias disponibles"
+on dias_disponibles for update
+to authenticated
+using (true)
+with check (true);
+
 -- La página pública ya no lee la tabla dias_disponibles directo: usa esta
 -- función para de paso saber cuántos carros ya hay agendados ese día
 -- (ocupados), sin exponer nombres/teléfonos de nadie — solo un conteo.

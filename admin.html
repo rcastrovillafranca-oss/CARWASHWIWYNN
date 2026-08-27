@@ -95,7 +95,8 @@
       <input type="time" id="dia-inicio" value="09:00" aria-label="Hora de inicio">
       <input type="time" id="dia-fin" value="14:00" aria-label="Hora de fin">
       <input type="number" id="dia-limite" min="1" step="1" placeholder="Límite (opcional)" aria-label="Límite de carros ese día">
-      <button type="submit" class="btn btn--primary btn--sm">Agregar</button>
+      <button type="submit" class="btn btn--primary btn--sm" id="dia-submit-btn">Agregar</button>
+      <button type="button" class="btn btn--ghost btn--sm hidden" id="dia-cancelar-btn">Cancelar edición</button>
     </form>
     <p class="form-error hidden" id="dia-error">No se pudo agregar el día.</p>
 

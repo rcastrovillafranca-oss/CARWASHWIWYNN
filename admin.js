@@ -128,6 +128,32 @@
   const diaLimite = document.getElementById("dia-limite");
   const diaError = document.getElementById("dia-error");
   const diasLista = document.getElementById("dias-lista");
+  const diaSubmitBtn = document.getElementById("dia-submit-btn");
+  const diaCancelarBtn = document.getElementById("dia-cancelar-btn");
+
+  let editingDiaId = null;
+
+  function empezarEdicion(dia) {
+    editingDiaId = dia.id;
+    diaFecha.value = dia.fecha;
+    diaInicio.value = dia.hora_inicio ? dia.hora_inicio.slice(0, 5) : "";
+    diaFin.value = dia.hora_fin ? dia.hora_fin.slice(0, 5) : "";
+    diaLimite.value = dia.limite != null ? dia.limite : "";
+    diaSubmitBtn.textContent = "Guardar cambios";
+    diaCancelarBtn.classList.remove("hidden");
+    diaForm.scrollIntoView({ behavior: "smooth", block: "center" });
+  }
+
+  function cancelarEdicion() {
+    editingDiaId = null;
+    diaForm.reset();
+    diaInicio.value = "09:00";
+    diaFin.value = "14:00";
+    diaSubmitBtn.textContent = "Agregar";
+    diaCancelarBtn.classList.add("hidden");
+  }
+
+  diaCancelarBtn.addEventListener("click", cancelarEdicion);
 
   function formatFechaCorta(fecha) {
     const [y, m, d] = fecha.split("-").map(Number);
@@ -184,6 +210,14 @@
       texto.innerHTML = html;
       item.appendChild(texto);
 
+      const editar = document.createElement("button");
+      editar.type = "button";
+      editar.className = "dia-item__editar";
+      editar.textContent = "✏️";
+      editar.setAttribute("aria-label", `Editar ${formatFechaCorta(dia.fecha)}`);
+      editar.addEventListener("click", () => empezarEdicion(dia));
+      item.appendChild(editar);
+
       const quitar = document.createElement("button");
       quitar.type = "button";
       quitar.className = "dia-item__quitar";
@@ -206,23 +240,25 @@
 
     if (!diaFecha.value) return;
 
-    const { error } = await client.from("dias_disponibles").insert({
+    const payload = {
       fecha: diaFecha.value,
       hora_inicio: diaInicio.value || null,
       hora_fin: diaFin.value || null,
       limite: diaLimite.value ? Number(diaLimite.value) : null,
-    });
+    };
+
+    const { error } = editingDiaId
+      ? await client.from("dias_disponibles").update(payload).eq("id", editingDiaId)
+      : await client.from("dias_disponibles").insert(payload);
 
     if (error) {
-      console.error("No se pudo agregar el día", error);
-      diaError.textContent = error.code === "23505" ? "Ese día ya estaba agregado." : "No se pudo agregar el día.";
+      console.error("No se pudo guardar el día", error);
+      diaError.textContent = error.code === "23505" ? "Ese día ya estaba agregado." : "No se pudo guardar el día.";
       diaError.classList.remove("hidden");
       return;
     }
 
-    diaForm.reset();
-    diaInicio.value = "09:00";
-    diaFin.value = "14:00";
+    cancelarEdicion();
     cargarDiasDisponibles();
   });
 
