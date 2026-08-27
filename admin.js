@@ -135,11 +135,10 @@
   }
 
   async function cargarDiasDisponibles() {
-    const hoy = new Date().toISOString().slice(0, 10);
     const { data, error } = await client
       .from("dias_disponibles")
       .select("id, fecha, hora_inicio, hora_fin")
-      .gte("fecha", hoy)
+      .gte("fecha", todayISO())
       .order("fecha", { ascending: true });
 
     if (error) {

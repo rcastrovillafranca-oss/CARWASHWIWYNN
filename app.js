@@ -110,6 +110,14 @@
     return new Date(y, m - 1, d);
   }
 
+  // Fecha de HOY en horario local (no UTC) — con toISOString() la fecha se
+  // recorre un día en cuanto cae la tarde/noche en husos horarios detrás de
+  // UTC (México, etc.), y "hoy" desaparece de la lista de días disponibles.
+  function todayISO() {
+    const d = new Date();
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+  }
+
   function formatHora(hora) {
     if (!hora) return "";
     const [h, m] = hora.split(":");
@@ -186,11 +194,10 @@
     }
 
     try {
-      const hoyISO = new Date().toISOString().slice(0, 10);
       const { data, error } = await client
         .from("dias_disponibles")
         .select("fecha, hora_inicio, hora_fin")
-        .gte("fecha", hoyISO)
+        .gte("fecha", todayISO())
         .order("fecha", { ascending: true });
 
       if (error) throw error;
