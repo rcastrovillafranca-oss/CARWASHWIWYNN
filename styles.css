@@ -322,7 +322,7 @@ img { max-width: 100%; display: block; }
   padding: 22px 14px 18px;
   text-align: center;
   cursor: pointer;
-  transition: border-color 0.15s ease, box-shadow 0.15s ease, transform 0.15s ease;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease, transform 0.2s ease, opacity 0.2s ease, filter 0.2s ease;
   position: relative;
   overflow: hidden;
 }
@@ -330,21 +330,44 @@ img { max-width: 100%; display: block; }
 .price-card:active { transform: scale(0.98); }
 .price-card:focus-visible { outline: 2px solid var(--cyan-bright); outline-offset: 3px; }
 
+/* La tarjeta NO elegida se apaga para que no quede duda de cuál sí lo está. */
+.price-card.dimmed {
+  opacity: 0.5;
+  filter: saturate(0.6);
+  transform: scale(0.96);
+}
+
+.price-card.dimmed:hover { opacity: 0.75; }
+
 .price-card.selected {
-  border-color: var(--cyan);
-  box-shadow: 0 0 0 2px rgba(34, 193, 224, 0.28) inset, 0 12px 28px -12px rgba(34, 193, 224, 0.45);
+  border-color: var(--cyan-bright);
+  border-width: 2.5px;
+  background: linear-gradient(165deg, rgba(34, 193, 224, 0.32), var(--black-card) 72%);
+  box-shadow: 0 0 0 3px rgba(34, 193, 224, 0.35) inset, 0 22px 40px -14px rgba(34, 193, 224, 0.7);
+  transform: translateY(-6px) scale(1.03);
 }
 
-.price-card__selected {
-  margin: 12px 0 0;
-  font-size: 12px;
-  font-weight: 700;
-  color: var(--cyan-bright);
-  opacity: 0;
-  transition: opacity 0.15s ease;
+/* Cinta de esquina tipo "elegido" — se ve como una tarjeta real que
+   levantaste y le pegaste un sello, no solo un cambio de color. */
+.price-card__ribbon {
+  position: absolute;
+  top: 16px;
+  right: -38px;
+  width: 150px;
+  padding: 6px 0;
+  background: linear-gradient(90deg, var(--cyan-bright), var(--cyan));
+  color: #041014;
+  font-size: 11.5px;
+  font-weight: 800;
+  letter-spacing: 0.03em;
+  text-align: center;
+  box-shadow: 0 4px 10px -2px rgba(0, 0, 0, 0.4);
+  transform: rotate(40deg) scale(0);
+  transition: transform 0.28s cubic-bezier(0.34, 1.56, 0.64, 1);
+  z-index: 2;
 }
 
-.price-card.selected .price-card__selected { opacity: 1; }
+.price-card.selected .price-card__ribbon { transform: rotate(40deg) scale(1); }
 
 .price-card::after {
   content: "";
@@ -373,6 +396,10 @@ img { max-width: 100%; display: block; }
 .price-card--accent {
   background: linear-gradient(165deg, rgba(34, 193, 224, 0.16), var(--black-card) 62%);
   border-color: var(--cyan-dark);
+}
+
+.price-card--accent.selected {
+  background: linear-gradient(165deg, rgba(34, 193, 224, 0.32), var(--black-card) 72%);
 }
 
 .price-card--accent h3 { color: var(--silver); }
@@ -544,6 +571,85 @@ img { max-width: 100%; display: block; }
 
 .day-chip.selected .day-chip__num { color: var(--cyan-bright); }
 
+.shift-picker {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px;
+}
+
+.shift-chip {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--black-card);
+  border: 1.5px solid rgba(255, 255, 255, 0.1);
+  border-radius: 16px;
+  padding: 18px 6px;
+  text-align: center;
+  cursor: pointer;
+  color: var(--silver);
+  font-family: var(--font-body);
+  overflow: hidden;
+  box-shadow: inset 0 -3px 0 rgba(0, 0, 0, 0.3);
+  transition: border-color 0.15s ease, background 0.2s ease, color 0.15s ease, transform 0.2s ease, opacity 0.2s ease, filter 0.2s ease, box-shadow 0.2s ease;
+}
+
+.shift-chip:active { transform: scale(0.93); }
+.shift-chip:focus-visible { outline: 2px solid var(--cyan-bright); outline-offset: 2px; }
+.shift-chip:hover { border-color: rgba(34, 193, 224, 0.5); }
+
+.shift-chip__letter {
+  font-family: var(--font-display);
+  font-size: 30px;
+  font-weight: 700;
+  line-height: 1;
+  color: var(--silver);
+}
+
+.shift-chip__check {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: #041014;
+  color: var(--cyan-bright);
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 20px;
+  text-align: center;
+  transform: scale(0);
+  opacity: 0;
+  transition: transform 0.18s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.15s ease;
+}
+
+/* El turno NO elegido se apaga en cuanto se eligió otro. */
+.shift-chip.dimmed {
+  opacity: 0.45;
+  filter: saturate(0.6);
+  transform: scale(0.95);
+}
+
+.shift-chip.selected {
+  border-color: var(--cyan-bright);
+  border-width: 2.5px;
+  background: linear-gradient(160deg, var(--cyan-bright), var(--cyan));
+  box-shadow: inset 0 -3px 0 rgba(0, 0, 0, 0.15), 0 14px 26px -10px rgba(34, 193, 224, 0.65);
+  transform: translateY(-3px) scale(1.06);
+}
+
+.shift-chip.selected .shift-chip__letter { color: #041014; }
+
+.shift-chip.selected .shift-chip__check { transform: scale(1); opacity: 1; }
+
+.shift-picker__empty {
+  margin: 8px 0 0;
+  font-size: 13px;
+  color: var(--danger, #e05252);
+}
+
 .form-registro__submit { margin-top: 4px; width: 100%; }
 
 .form-registro__submit:disabled { opacity: 0.5; cursor: not-allowed; }
@@ -570,14 +676,30 @@ img { max-width: 100%; display: block; }
 
 .success__turno {
   font-family: var(--font-display);
-  font-size: 64px;
+  font-size: 104px;
   font-weight: 700;
   line-height: 1;
-  margin: 4px 0 14px;
+  margin: 4px 0 10px;
   background: linear-gradient(90deg, var(--cyan-bright), var(--cyan));
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
+  text-shadow: 0 0 40px rgba(34, 193, 224, 0.4);
+}
+
+.success__screenshot-hint {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  margin: 0 0 20px;
+  padding: 7px 16px;
+  border-radius: 999px;
+  background: rgba(34, 193, 224, 0.12);
+  border: 1px solid rgba(34, 193, 224, 0.4);
+  color: var(--cyan-bright);
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
 }
 
 .success h3 {
@@ -652,6 +774,7 @@ img { max-width: 100%; display: block; }
 @media (max-width: 360px) {
   .cards { gap: 10px; }
   .price-card__price { font-size: 28px; }
+  .success__turno { font-size: 76px; }
 }
 
 @media (min-width: 560px) {

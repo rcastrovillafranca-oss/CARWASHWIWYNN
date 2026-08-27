@@ -403,10 +403,13 @@
 .row__tel:active { color: var(--cyan-bright); }
 
 .row__tipo::before { content: "· "; }
+.row__turno-trabajo::before { content: "· "; }
 .row__fecha::before { content: "· "; }
 .row__hora::before { content: "· "; }
 
 .row__fecha { color: var(--lime); font-weight: 600; }
+.row__turno-trabajo:empty::before { content: ""; }
+.row__turno-trabajo { color: var(--cyan-bright); font-weight: 600; }
 
 .row__actions { flex: none; display: flex; gap: 6px; }
 

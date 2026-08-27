@@ -48,11 +48,11 @@
 
   function selectCard(card) {
     priceCards.forEach((c) => {
-      c.classList.remove("selected");
-      c.setAttribute("aria-checked", "false");
+      const isChosen = c === card;
+      c.classList.toggle("selected", isChosen);
+      c.classList.toggle("dimmed", !isChosen);
+      c.setAttribute("aria-checked", isChosen ? "true" : "false");
     });
-    card.classList.add("selected");
-    card.setAttribute("aria-checked", "true");
     tipoInput.value = card.dataset.tipo;
     precioInput.value = card.dataset.precio;
     submitLabel.textContent = `Confirmar registro · ${TIPO_LABELS[card.dataset.tipo]} · $${card.dataset.precio}`;
@@ -69,6 +69,28 @@
         card.click();
       }
     });
+  });
+
+  // ---------- Turno de trabajo del cliente ----------
+
+  const shiftPicker = document.getElementById("shift-picker");
+  const shiftPickerEmpty = document.getElementById("shift-picker-empty");
+  const turnoTrabajoInput = document.getElementById("turno_trabajo");
+  const shiftChips = shiftPicker.querySelectorAll(".shift-chip");
+
+  function selectShift(chip) {
+    shiftChips.forEach((c) => {
+      const isChosen = c === chip;
+      c.classList.toggle("selected", isChosen);
+      c.classList.toggle("dimmed", !isChosen);
+      c.setAttribute("aria-checked", isChosen ? "true" : "false");
+    });
+    turnoTrabajoInput.value = chip.dataset.turno;
+    shiftPickerEmpty.classList.add("hidden");
+  }
+
+  shiftChips.forEach((chip) => {
+    chip.addEventListener("click", () => selectShift(chip));
   });
 
   // ---------- Día de servicio ----------
@@ -195,6 +217,12 @@
       return;
     }
 
+    if (!data.turno_trabajo) {
+      shiftPickerEmpty.classList.remove("hidden");
+      shiftPicker.scrollIntoView({ behavior: "smooth", block: "center" });
+      return;
+    }
+
     submitBtn.disabled = true;
     submitLabel.textContent = "Registrando...";
 
@@ -215,6 +243,7 @@
           p_marca: data.marca,
           p_modelo: data.modelo,
           p_fecha_servicio: data.fecha_servicio,
+          p_turno_trabajo: data.turno_trabajo,
         });
 
         if (error) throw error;
@@ -254,6 +283,12 @@
   document.getElementById("reset-btn").addEventListener("click", () => {
     form.reset();
     selectCard(priceCards[0]);
+    shiftChips.forEach((c) => {
+      c.classList.remove("selected", "dimmed");
+      c.setAttribute("aria-checked", "false");
+    });
+    turnoTrabajoInput.value = "";
+    shiftPickerEmpty.classList.add("hidden");
     renderDayPicker();
     success.classList.add("hidden");
     form.classList.remove("hidden");

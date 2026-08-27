@@ -96,7 +96,7 @@
   async function loadRows() {
     const { data, error } = await client
       .from("registros")
-      .select("id, created_at, nombre, telefono, marca, modelo, tipo_auto, precio, turno, estado, fecha_servicio")
+      .select("id, created_at, nombre, telefono, marca, modelo, tipo_auto, precio, turno, turno_trabajo, estado, fecha_servicio")
       .order("created_at", { ascending: true });
 
     if (error) {
@@ -552,6 +552,7 @@
       tel.href = `tel:${row.telefono.replace(/\D/g, "")}`;
 
       node.querySelector(".row__tipo").textContent = tipoLabel(row.tipo_auto);
+      node.querySelector(".row__turno-trabajo").textContent = row.turno_trabajo ? `Turno ${row.turno_trabajo}` : "";
       node.querySelector(".row__fecha").textContent = row.fecha_servicio ? formatFechaCorta(row.fecha_servicio) : "";
       node.querySelector(".row__hora").textContent = relativeTime(row.created_at);
 

@@ -13,6 +13,7 @@ create table if not exists registros (
   tipo_auto text not null check (tipo_auto in ('chico', 'troca')),
   precio integer not null,
   turno integer,
+  turno_trabajo text check (turno_trabajo in ('A', 'B', 'C', 'D')),
   fecha_servicio date,
   estado text not null default 'pendiente' check (estado in ('pendiente', 'en_proceso', 'listo'))
 );
@@ -22,6 +23,7 @@ alter table registros add column if not exists marca text not null default '';
 alter table registros add column if not exists modelo text not null default '';
 alter table registros add column if not exists turno integer;
 alter table registros add column if not exists fecha_servicio date;
+alter table registros add column if not exists turno_trabajo text check (turno_trabajo in ('A', 'B', 'C', 'D'));
 
 alter table registros enable row level security;
 
@@ -77,9 +79,11 @@ using (true);
 drop policy if exists "insertar registros publicos" on registros;
 drop policy if exists "leer registros publicos" on registros;
 
--- Se elimina la versión anterior (6 parámetros, sin fecha) por si ya
--- existía, para poder cambiar la firma de la función sin conflicto.
+-- Se eliminan versiones anteriores (6 y 7 parámetros, sin turno_trabajo)
+-- por si ya existían, para poder cambiar la firma de la función sin
+-- conflicto.
 drop function if exists registrar_lavado(text, text, text, integer, text, text);
+drop function if exists registrar_lavado(text, text, text, integer, text, text, date);
 
 create or replace function registrar_lavado(
   p_nombre text,
@@ -88,7 +92,8 @@ create or replace function registrar_lavado(
   p_precio integer,
   p_marca text,
   p_modelo text,
-  p_fecha_servicio date
+  p_fecha_servicio date,
+  p_turno_trabajo text
 )
 returns table(turno integer, carros_adelante integer)
 language plpgsql
@@ -107,8 +112,8 @@ begin
   from registros r
   where r.fecha_servicio = p_fecha_servicio;
 
-  insert into registros (nombre, telefono, tipo_auto, precio, marca, modelo, turno, fecha_servicio)
-  values (p_nombre, p_telefono, p_tipo_auto, p_precio, p_marca, p_modelo, v_turno, p_fecha_servicio)
+  insert into registros (nombre, telefono, tipo_auto, precio, marca, modelo, turno, fecha_servicio, turno_trabajo)
+  values (p_nombre, p_telefono, p_tipo_auto, p_precio, p_marca, p_modelo, v_turno, p_fecha_servicio, p_turno_trabajo)
   returning registros.created_at into v_created_at;
 
   select count(*) into v_adelante
@@ -121,8 +126,8 @@ begin
 end;
 $$;
 
-revoke all on function registrar_lavado(text, text, text, integer, text, text, date) from public;
-grant execute on function registrar_lavado(text, text, text, integer, text, text, date) to anon;
+revoke all on function registrar_lavado(text, text, text, integer, text, text, date, text) from public;
+grant execute on function registrar_lavado(text, text, text, integer, text, text, date, text) to anon;
 
 -- ---------- Panel de administración ----------
 --
