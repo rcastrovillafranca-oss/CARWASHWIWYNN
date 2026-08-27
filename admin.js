@@ -33,6 +33,7 @@
   });
 
   let rows = [];
+  let diasCache = [];
   let activeFilter = "activos";
   let channel = null;
 
@@ -107,6 +108,7 @@
     rows = data || [];
     renderStats();
     renderQueue();
+    renderDiasDisponibles(diasCache);
   }
 
   function subscribeRealtime() {
@@ -123,6 +125,7 @@
   const diaFecha = document.getElementById("dia-fecha");
   const diaInicio = document.getElementById("dia-inicio");
   const diaFin = document.getElementById("dia-fin");
+  const diaLimite = document.getElementById("dia-limite");
   const diaError = document.getElementById("dia-error");
   const diasLista = document.getElementById("dias-lista");
 
@@ -137,7 +140,7 @@
   async function cargarDiasDisponibles() {
     const { data, error } = await client
       .from("dias_disponibles")
-      .select("id, fecha, hora_inicio, hora_fin")
+      .select("id, fecha, hora_inicio, hora_fin, limite")
       .gte("fecha", todayISO())
       .order("fecha", { ascending: true });
 
@@ -146,7 +149,8 @@
       return;
     }
 
-    renderDiasDisponibles(data || []);
+    diasCache = data || [];
+    renderDiasDisponibles(diasCache);
   }
 
   function renderDiasDisponibles(dias) {
@@ -168,6 +172,14 @@
       let html = formatFechaCorta(dia.fecha);
       if (dia.hora_inicio) {
         html += ` <span class="dia-item__hora">${dia.hora_inicio.slice(0, 5)}${dia.hora_fin ? "–" + dia.hora_fin.slice(0, 5) : ""}</span>`;
+      }
+      if (dia.limite != null) {
+        // Se cuenta contra lo que ya haya en "rows" (todos los registros
+        // cargados), sin importar su estado — el cupo es del día, no de
+        // si ya se lavó o no.
+        const ocupados = rows.filter((r) => r.fecha_servicio === dia.fecha).length;
+        const lleno = ocupados >= dia.limite;
+        html += ` <span class="dia-item__limite${lleno ? " dia-item__limite--lleno" : ""}">${ocupados}/${dia.limite}</span>`;
       }
       texto.innerHTML = html;
       item.appendChild(texto);
@@ -198,6 +210,7 @@
       fecha: diaFecha.value,
       hora_inicio: diaInicio.value || null,
       hora_fin: diaFin.value || null,
+      limite: diaLimite.value ? Number(diaLimite.value) : null,
     });
 
     if (error) {
@@ -611,6 +624,104 @@
 
     closeResetModal();
     loadRows();
+  });
+
+  // ---------- Contactos (para promociones) ----------
+
+  const contactosModal = document.getElementById("contactos-modal");
+  const contactosLista = document.getElementById("contactos-lista");
+  const contactosEmpty = document.getElementById("contactos-empty");
+  const contactosCopiado = document.getElementById("contactos-copiado");
+  let contactosCache = [];
+
+  function formatFechaHora(iso) {
+    const d = new Date(iso);
+    return d.toLocaleDateString("es-MX", { day: "numeric", month: "short" });
+  }
+
+  function renderContactos() {
+    contactosLista.innerHTML = "";
+
+    if (contactosCache.length === 0) {
+      contactosEmpty.textContent = "Todavía no hay contactos guardados.";
+      contactosLista.appendChild(contactosEmpty);
+      return;
+    }
+
+    contactosCache.forEach((c) => {
+      const row = document.createElement("div");
+      row.className = "contacto-row";
+      row.innerHTML = `
+        <span>
+          <span class="contacto-row__nombre">${c.nombre || "(sin nombre)"}</span><br>
+          <a class="contacto-row__tel" href="tel:${c.telefono.replace(/\D/g, "")}">${c.telefono}</a>
+        </span>
+        <span class="contacto-row__meta">${c.visitas} visita${c.visitas === 1 ? "" : "s"} · última ${formatFechaHora(c.ultima_visita)}</span>
+      `;
+      contactosLista.appendChild(row);
+    });
+  }
+
+  async function cargarContactos() {
+    contactosEmpty.textContent = "Cargando...";
+    contactosLista.innerHTML = "";
+    contactosLista.appendChild(contactosEmpty);
+
+    const { data, error } = await client
+      .from("contactos")
+      .select("telefono, nombre, visitas, ultima_visita")
+      .order("ultima_visita", { ascending: false });
+
+    if (error) {
+      console.error("No se pudieron cargar los contactos", error);
+      contactosEmpty.textContent = "No se pudieron cargar los contactos.";
+      return;
+    }
+
+    contactosCache = data || [];
+    renderContactos();
+  }
+
+  function openContactosModal() {
+    contactosCopiado.classList.add("hidden");
+    contactosModal.classList.remove("hidden");
+    cargarContactos();
+  }
+
+  function closeContactosModal() {
+    contactosModal.classList.add("hidden");
+  }
+
+  document.getElementById("open-contactos-modal").addEventListener("click", openContactosModal);
+  document.getElementById("contactos-cerrar").addEventListener("click", closeContactosModal);
+  contactosModal.addEventListener("click", (e) => {
+    if (e.target === contactosModal) closeContactosModal();
+  });
+
+  document.getElementById("contactos-copiar").addEventListener("click", async () => {
+    const telefonos = contactosCache.map((c) => c.telefono).join("\n");
+    try {
+      await navigator.clipboard.writeText(telefonos);
+      contactosCopiado.classList.remove("hidden");
+      setTimeout(() => contactosCopiado.classList.add("hidden"), 2500);
+    } catch (e) {
+      console.error("No se pudo copiar", e);
+    }
+  });
+
+  document.getElementById("contactos-csv").addEventListener("click", () => {
+    const filas = [["telefono", "nombre", "visitas", "ultima_visita"]];
+    contactosCache.forEach((c) => filas.push([c.telefono, c.nombre, c.visitas, c.ultima_visita]));
+    const csv = filas.map((f) => f.map((v) => `"${String(v ?? "").replace(/"/g, '""')}"`).join(",")).join("\n");
+    const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `contactos-${todayISO()}.csv`;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
   });
 
   checkSession();

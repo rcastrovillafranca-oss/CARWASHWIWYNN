@@ -152,15 +152,26 @@
     </form>
 
     <div class="success hidden" id="success">
-      <p class="success__eyebrow">Tu turno</p>
-      <p class="success__turno">#<span id="success-turno">–</span></p>
-      <p class="success__screenshot-hint">📸 Toma captura de este número</p>
-      <h3>¡Gracias, <span id="success-nombre"></span>!</h3>
-      <p>Registramos tu <strong id="success-auto"></strong> para el <strong id="success-fecha"></strong>.<br>Te contactamos al teléfono que dejaste cuando esté listo.</p>
+      <div class="success__card">
+        <div class="success__brand">
+          <img src="assets/logo-barraza.png" alt="Detallados Barraza" class="success__brand-logo success__brand-logo--barraza">
+          <span class="success__brand-x" aria-hidden="true">×</span>
+          <img src="assets/logo-wiwynn.png" alt="Wiwynn" class="success__brand-logo success__brand-logo--wiwynn">
+        </div>
 
-      <div class="success__warning hidden" id="success-warning">
-        <span aria-hidden="true">⏳</span>
-        Tienes <strong id="success-adelante"></strong> carros por delante — la espera puede tardar un poco más de lo normal.
+        <p class="success__eyebrow">Tu turno es</p>
+        <p class="success__turno">#<span id="success-turno">–</span></p>
+        <p class="success__screenshot-hint">📸 Toma captura de este número</p>
+
+        <div class="success__divider" aria-hidden="true"></div>
+
+        <h3>¡Gracias, <span id="success-nombre"></span>!</h3>
+        <p>Registramos tu <strong id="success-auto"></strong> para el <strong id="success-fecha"></strong>.<br>Te contactamos al teléfono que dejaste cuando esté listo.</p>
+
+        <div class="success__warning hidden" id="success-warning">
+          <span aria-hidden="true">⏳</span>
+          Tienes <strong id="success-adelante"></strong> carros por delante — la espera puede tardar un poco más de lo normal.
+        </div>
       </div>
 
       <button type="button" class="btn btn--ghost" id="reset-btn">Registrar otro carro</button>

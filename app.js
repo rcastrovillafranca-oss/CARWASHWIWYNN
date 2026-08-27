@@ -147,6 +147,10 @@
     fechaInput.value = dia.fecha;
   }
 
+  function diaEstaLleno(dia) {
+    return dia.limite != null && dia.ocupados != null && dia.ocupados >= dia.limite;
+  }
+
   function renderDayPicker() {
     dayPicker.querySelectorAll(".day-chip").forEach((c) => c.remove());
 
@@ -157,26 +161,47 @@
       return;
     }
 
-    dayPickerEmpty.classList.add("hidden");
-    submitBtn.disabled = false;
+    let seleccionado = false;
 
-    diasDisponibles.forEach((dia, i) => {
+    diasDisponibles.forEach((dia) => {
+      const lleno = diaEstaLleno(dia);
       const d = parseFechaLocal(dia.fecha);
       const chip = document.createElement("button");
       chip.type = "button";
-      chip.className = "day-chip";
+      chip.className = lleno ? "day-chip day-chip--lleno" : "day-chip";
       chip.setAttribute("role", "radio");
       chip.setAttribute("aria-checked", "false");
+      if (lleno) chip.disabled = true;
       chip.innerHTML = `
         <span class="day-chip__dow">${DOW_LABELS[d.getDay()]}</span>
         <span class="day-chip__num">${d.getDate()}</span>
         <span class="day-chip__mes">${MES_LABELS[d.getMonth()]}</span>
-        ${dia.hora_inicio ? `<span class="day-chip__hora">${formatHora(dia.hora_inicio)}${dia.hora_fin ? "–" + formatHora(dia.hora_fin) : ""}</span>` : ""}
+        ${
+          lleno
+            ? `<span class="day-chip__hora day-chip__hora--lleno">Lleno</span>`
+            : dia.hora_inicio
+              ? `<span class="day-chip__hora">${formatHora(dia.hora_inicio)}${dia.hora_fin ? "–" + formatHora(dia.hora_fin) : ""}</span>`
+              : ""
+        }
       `;
-      chip.addEventListener("click", () => selectDay(chip, dia));
+      if (!lleno) {
+        chip.addEventListener("click", () => selectDay(chip, dia));
+        if (!seleccionado) {
+          selectDay(chip, dia);
+          seleccionado = true;
+        }
+      }
       dayPicker.appendChild(chip);
-      if (i === 0) selectDay(chip, dia);
     });
+
+    if (!seleccionado) {
+      dayPickerEmpty.textContent = "Todos los días disponibles ya se llenaron. Vuelve a checar más tarde.";
+      dayPickerEmpty.classList.remove("hidden");
+      submitBtn.disabled = true;
+    } else {
+      dayPickerEmpty.classList.add("hidden");
+      submitBtn.disabled = false;
+    }
   }
 
   async function cargarDiasDisponibles() {
@@ -194,14 +219,14 @@
     }
 
     try {
-      const { data, error } = await client
-        .from("dias_disponibles")
-        .select("fecha, hora_inicio, hora_fin")
-        .gte("fecha", todayISO())
-        .order("fecha", { ascending: true });
+      // Usa la función dias_disponibles_publico() (ver supabase/schema.sql)
+      // en vez de leer la tabla directo: de paso trae cuántos carros ya
+      // hay agendados ese día, para saber si ya se llenó el cupo.
+      const { data, error } = await client.rpc("dias_disponibles_publico");
 
       if (error) throw error;
-      diasDisponibles = data || [];
+      const hoy = todayISO();
+      diasDisponibles = (data || []).filter((d) => d.fecha >= hoy);
       renderDayPicker();
     } catch (err) {
       console.error("No se pudieron cargar los días disponibles", err);
@@ -280,7 +305,14 @@
       success.scrollIntoView({ behavior: "smooth", block: "start" });
     } catch (err) {
       console.error(err);
-      errorMsg.classList.remove("hidden");
+      if (err && err.message && err.message.includes("CUPO_LLENO")) {
+        errorMsg.textContent = "Ese día se acaba de llenar. Elige otro día para continuar.";
+        errorMsg.classList.remove("hidden");
+        cargarDiasDisponibles();
+      } else {
+        errorMsg.textContent = "Ocurrió un error al registrar tu carro. Intenta de nuevo.";
+        errorMsg.classList.remove("hidden");
+      }
     } finally {
       submitBtn.disabled = false;
       submitLabel.textContent = `Confirmar registro · ${TIPO_LABELS[tipoInput.value]} · $${precioInput.value}`;

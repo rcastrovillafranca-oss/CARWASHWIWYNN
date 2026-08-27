@@ -65,7 +65,10 @@
       <img src="assets/logo-barraza.png" alt="Detallados Barraza" class="dash__logo">
       <span class="dash__title">Panel de equipo</span>
     </div>
-    <button type="button" class="btn btn--ghost btn--sm" id="logout-btn">Cerrar sesión</button>
+    <div class="dash__header-actions">
+      <button type="button" class="btn btn--ghost btn--sm" id="open-contactos-modal">Contactos</button>
+      <button type="button" class="btn btn--ghost btn--sm" id="logout-btn">Cerrar sesión</button>
+    </div>
   </header>
 
   <section class="dash__stats" aria-label="Resumen de hoy">
@@ -91,6 +94,7 @@
       <input type="date" id="dia-fecha" required>
       <input type="time" id="dia-inicio" value="09:00" aria-label="Hora de inicio">
       <input type="time" id="dia-fin" value="14:00" aria-label="Hora de fin">
+      <input type="number" id="dia-limite" min="1" step="1" placeholder="Límite (opcional)" aria-label="Límite de carros ese día">
       <button type="submit" class="btn btn--primary btn--sm">Agregar</button>
     </form>
     <p class="form-error hidden" id="dia-error">No se pudo agregar el día.</p>
@@ -138,6 +142,33 @@
       <button type="button" class="btn btn--danger" id="reset-confirm-btn" disabled>
         <span id="reset-confirm-label">Borrar todo</span>
       </button>
+    </div>
+  </div>
+</div>
+
+<!-- ---------- Modal: contactos para promociones ---------- -->
+<div class="modal hidden" id="contactos-modal">
+  <div class="modal__card modal__card--wide">
+    <h3>Contactos para promociones</h3>
+    <p class="modal__text">
+      Cada teléfono que se registra se guarda aquí aparte, aunque después
+      borres la cola en la zona de peligro — así siempre tienes a quién
+      avisarle de promociones.
+    </p>
+
+    <div class="contactos-actions">
+      <button type="button" class="btn btn--ghost btn--sm" id="contactos-copiar">Copiar teléfonos</button>
+      <button type="button" class="btn btn--ghost btn--sm" id="contactos-csv">Descargar CSV</button>
+    </div>
+
+    <p class="contactos-copiado hidden" id="contactos-copiado">Copiado ✓</p>
+
+    <div class="contactos-lista" id="contactos-lista">
+      <p class="contactos-lista__empty" id="contactos-empty">Cargando...</p>
+    </div>
+
+    <div class="modal__actions">
+      <button type="button" class="btn btn--ghost" id="contactos-cerrar">Cerrar</button>
     </div>
   </div>
 </div>

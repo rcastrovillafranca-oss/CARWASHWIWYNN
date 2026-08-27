@@ -37,8 +37,12 @@ create table if not exists dias_disponibles (
   fecha date not null unique,
   hora_inicio time,
   hora_fin time,
+  limite integer,
   created_at timestamptz not null default now()
 );
+
+-- Por si vienes de una versión anterior del schema sin esta columna:
+alter table dias_disponibles add column if not exists limite integer;
 
 alter table dias_disponibles enable row level security;
 
@@ -60,6 +64,53 @@ with check (true);
 drop policy if exists "admin borrar dias disponibles" on dias_disponibles;
 create policy "admin borrar dias disponibles"
 on dias_disponibles for delete
+to authenticated
+using (true);
+
+-- La página pública ya no lee la tabla dias_disponibles directo: usa esta
+-- función para de paso saber cuántos carros ya hay agendados ese día
+-- (ocupados), sin exponer nombres/teléfonos de nadie — solo un conteo.
+drop function if exists dias_disponibles_publico();
+
+create or replace function dias_disponibles_publico()
+returns table(fecha date, hora_inicio time, hora_fin time, limite integer, ocupados bigint)
+language sql
+security definer
+set search_path = public
+stable
+as $$
+  select
+    d.fecha,
+    d.hora_inicio,
+    d.hora_fin,
+    d.limite,
+    (select count(*) from registros r where r.fecha_servicio = d.fecha) as ocupados
+  from dias_disponibles d
+  order by d.fecha asc;
+$$;
+
+revoke all on function dias_disponibles_publico() from public;
+grant execute on function dias_disponibles_publico() to anon;
+
+-- ---------- Contactos (para promociones) ----------
+--
+-- Guarda cada teléfono que se registra alguna vez, aparte de "registros".
+-- Sobrevive aunque uses "Reiniciar todos los registros" en la zona de
+-- peligro del panel — esa acción solo borra la cola/turnos, nunca esta
+-- lista, para que siempre tengas a quién avisarle de promociones.
+create table if not exists contactos (
+  telefono text primary key,
+  nombre text not null default '',
+  visitas integer not null default 1,
+  primera_visita timestamptz not null default now(),
+  ultima_visita timestamptz not null default now()
+);
+
+alter table contactos enable row level security;
+
+drop policy if exists "admin leer contactos" on contactos;
+create policy "admin leer contactos"
+on contactos for select
 to authenticated
 using (true);
 
@@ -104,7 +155,25 @@ declare
   v_turno integer;
   v_created_at timestamptz;
   v_adelante integer;
+  v_limite integer;
+  v_ocupados integer;
 begin
+  -- Si ese día tiene límite de carros, no dejar registrar uno más si ya
+  -- se llenó el cupo.
+  select limite into v_limite
+  from dias_disponibles
+  where fecha = p_fecha_servicio;
+
+  if v_limite is not null then
+    select count(*) into v_ocupados
+    from registros r
+    where r.fecha_servicio = p_fecha_servicio;
+
+    if v_ocupados >= v_limite then
+      raise exception 'CUPO_LLENO' using errcode = 'P0001';
+    end if;
+  end if;
+
   -- El turno es por día de SERVICIO (el que eligió el cliente), no por
   -- día de registro — así "turno 5" siempre significa "el 5to auto de
   -- ese día en particular", sin importar cuándo se haya registrado.
@@ -121,6 +190,15 @@ begin
   where r.fecha_servicio = p_fecha_servicio
     and r.estado = 'pendiente'
     and r.created_at < v_created_at;
+
+  -- Guardadito de contactos para promociones — sobrevive aunque luego se
+  -- borren los registros desde la zona de peligro del panel.
+  insert into contactos (telefono, nombre, visitas, primera_visita, ultima_visita)
+  values (p_telefono, p_nombre, 1, now(), now())
+  on conflict (telefono) do update
+    set nombre = excluded.nombre,
+        visitas = contactos.visitas + 1,
+        ultima_visita = now();
 
   return query select v_turno, v_adelante;
 end;

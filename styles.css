@@ -571,6 +571,21 @@ img { max-width: 100%; display: block; }
 
 .day-chip.selected .day-chip__num { color: var(--cyan-bright); }
 
+.day-chip--lleno {
+  cursor: not-allowed;
+  opacity: 0.4;
+  filter: saturate(0.5);
+}
+
+.day-chip--lleno:hover { border-color: rgba(255, 255, 255, 0.12); }
+
+.day-chip__hora--lleno {
+  color: #ff8a8a;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
 .shift-picker {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
@@ -665,7 +680,52 @@ img { max-width: 100%; display: block; }
 
 .success { max-width: 440px; margin: 0 auto; text-align: center; padding: 12px 8px; animation: heroIn 0.5s cubic-bezier(.16,.8,.24,1) both; }
 
+/* Pase/ticket premium — se ve como algo que vale la pena guardar, no
+   solo una confirmación de formulario. */
+.success__card {
+  position: relative;
+  background: linear-gradient(165deg, rgba(34, 193, 224, 0.16), var(--black-card) 55%);
+  border: 1.5px solid rgba(34, 193, 224, 0.4);
+  border-radius: 28px;
+  padding: 30px 26px 26px;
+  margin-bottom: 22px;
+  box-shadow:
+    0 30px 60px -20px rgba(34, 193, 224, 0.4),
+    0 0 0 1px rgba(255, 255, 255, 0.04) inset;
+}
+
+.success__card::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background:
+    radial-gradient(220px 140px at 15% -10%, rgba(141, 198, 63, 0.18), transparent 60%),
+    radial-gradient(260px 160px at 105% 15%, rgba(34, 193, 224, 0.22), transparent 60%);
+  pointer-events: none;
+}
+
+.success__brand {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.success__brand-logo--barraza { height: 42px; width: auto; filter: drop-shadow(0 4px 14px rgba(34, 193, 224, 0.35)); }
+.success__brand-logo--wiwynn { height: 15px; width: auto; opacity: 0.92; }
+
+.success__brand-x {
+  position: relative;
+  color: var(--silver-faint);
+  font-size: 14px;
+  font-weight: 600;
+}
+
 .success__eyebrow {
+  position: relative;
   margin: 0;
   font-size: 12px;
   font-weight: 700;
@@ -675,8 +735,9 @@ img { max-width: 100%; display: block; }
 }
 
 .success__turno {
+  position: relative;
   font-family: var(--font-display);
-  font-size: 104px;
+  font-size: 168px;
   font-weight: 700;
   line-height: 1;
   margin: 4px 0 10px;
@@ -684,14 +745,15 @@ img { max-width: 100%; display: block; }
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
-  text-shadow: 0 0 40px rgba(34, 193, 224, 0.4);
+  text-shadow: 0 0 60px rgba(34, 193, 224, 0.5);
 }
 
 .success__screenshot-hint {
+  position: relative;
   display: inline-flex;
   align-items: center;
   gap: 7px;
-  margin: 0 0 20px;
+  margin: 0;
   padding: 7px 16px;
   border-radius: 999px;
   background: rgba(34, 193, 224, 0.12);
@@ -702,17 +764,44 @@ img { max-width: 100%; display: block; }
   letter-spacing: 0.02em;
 }
 
+/* Línea perforada tipo boleto — separa "tu turno" de los detalles. */
+.success__divider {
+  position: relative;
+  height: 1px;
+  margin: 24px -26px 20px;
+  background-image: linear-gradient(to right, rgba(255, 255, 255, 0.2) 50%, transparent 50%);
+  background-size: 12px 1px;
+  background-repeat: repeat-x;
+}
+
+.success__divider::before,
+.success__divider::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: var(--black);
+  transform: translateY(-50%);
+}
+
+.success__divider::before { left: -12px; }
+.success__divider::after { right: -12px; }
+
 .success h3 {
+  position: relative;
   font-family: var(--font-display);
   text-transform: uppercase;
   font-size: 20px;
   margin: 0 0 10px;
 }
 
-.success p { color: var(--silver-dim); font-size: 14.5px; margin: 0 0 6px; }
+.success p { position: relative; color: var(--silver-dim); font-size: 14.5px; margin: 0 0 6px; }
 .success p strong { color: var(--silver); font-weight: 700; }
 
 .success__warning {
+  position: relative;
   display: flex;
   align-items: center;
   gap: 10px;
@@ -723,7 +812,7 @@ img { max-width: 100%; display: block; }
   font-size: 13px;
   border-radius: 12px;
   padding: 12px 14px;
-  margin: 18px 0;
+  margin: 18px 0 0;
 }
 
 .success__warning strong { color: #ffe6a3; }
@@ -774,7 +863,9 @@ img { max-width: 100%; display: block; }
 @media (max-width: 360px) {
   .cards { gap: 10px; }
   .price-card__price { font-size: 28px; }
-  .success__turno { font-size: 76px; }
+  .success__card { padding: 26px 16px 22px; }
+  .success__divider { margin-left: -16px; margin-right: -16px; }
+  .success__turno { font-size: 118px; }
 }
 
 @media (min-width: 560px) {
