@@ -5,10 +5,12 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Detallados Barraza · Wiwynn</title>
 <meta name="description" content="Registra el lavado de tu carro en el campus de Wiwynn. Detallados Barraza pasa por él mientras trabajas.">
-<meta name="theme-color" content="#070b0f">
+<meta name="theme-color" content="#050608">
+<link rel="icon" type="image/png" href="assets/logo-barraza.png">
+<link rel="apple-touch-icon" href="assets/logo-barraza.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@500;600;700&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:ital,wght@0,600;0,700;0,800;1,600;1,700;1,800&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="styles.css">
 </head>
 <body>
@@ -16,14 +18,19 @@
 <div class="bg-mesh" aria-hidden="true"></div>
 
 <header class="hero">
+  <div class="hero__lightbar" aria-hidden="true"></div>
+  <div class="hero__ghost" aria-hidden="true">DETAIL</div>
+  <div class="hero__floor" aria-hidden="true"></div>
   <div class="bubbles" aria-hidden="true">
     <span></span><span></span><span></span><span></span><span></span><span></span><span></span>
   </div>
 
   <div class="hero__brand">
-    <img src="assets/logo-barraza.png" alt="Detallados Barraza" class="brand-logo brand-logo--barraza">
-    <span class="brand-x" aria-hidden="true">×</span>
-    <img src="assets/logo-wiwynn.png" alt="Wiwynn" class="brand-logo brand-logo--wiwynn">
+    <img src="assets/logo-barraza.png" alt="Detallados Barraza" class="brand-logo brand-logo--barraza" width="760" height="615">
+    <span class="hero__partner">
+      <span class="brand-x" aria-hidden="true">×</span>
+      <img src="assets/logo-wiwynn.png" alt="Wiwynn" class="brand-logo brand-logo--wiwynn">
+    </span>
   </div>
 
   <p class="hero__eyebrow">Servicio en sitio · Campus Wiwynn</p>
@@ -32,22 +39,30 @@
   <a href="#precios" class="btn btn--primary hero__cta">Registrar mi carro</a>
 </header>
 
+<div class="ticker" aria-hidden="true">
+  <div class="ticker__track">
+    <span>Lavado exterior&nbsp;✦&nbsp;Aspirado&nbsp;✦&nbsp;Armor All&nbsp;✦&nbsp;Aroma&nbsp;✦&nbsp;En tu turno&nbsp;✦&nbsp;Lavado exterior&nbsp;✦&nbsp;Aspirado&nbsp;✦&nbsp;Armor All&nbsp;✦&nbsp;Aroma&nbsp;✦&nbsp;En tu turno&nbsp;✦&nbsp;</span>
+    <span>Lavado exterior&nbsp;✦&nbsp;Aspirado&nbsp;✦&nbsp;Armor All&nbsp;✦&nbsp;Aroma&nbsp;✦&nbsp;En tu turno&nbsp;✦&nbsp;Lavado exterior&nbsp;✦&nbsp;Aspirado&nbsp;✦&nbsp;Armor All&nbsp;✦&nbsp;Aroma&nbsp;✦&nbsp;En tu turno&nbsp;✦&nbsp;</span>
+  </div>
+</div>
+
 <main>
   <section class="how" id="como-funciona">
+    <span class="section-kicker reveal">Así de fácil</span>
     <h2 class="section-title reveal">Cómo funciona</h2>
     <div class="how__steps">
       <div class="how__step reveal">
-        <div class="how__num">1</div>
+        <div class="how__num">01</div>
         <h3>Regístrate</h3>
         <p>Escanea el QR, elige el día que te quede mejor y completa tus datos.</p>
       </div>
       <div class="how__step reveal">
-        <div class="how__num">2</div>
+        <div class="how__num">02</div>
         <h3>Guarda tu turno</h3>
         <p>Te damos tu número de turno al instante. No hace falta que estés al pendiente, nosotros te avisamos.</p>
       </div>
       <div class="how__step reveal">
-        <div class="how__num">3</div>
+        <div class="how__num">03</div>
         <h3>Recógelo listo</h3>
         <p>Te contactamos por teléfono cuando tu auto esté detallado y esperándote.</p>
       </div>
@@ -55,6 +70,7 @@
   </section>
 
   <section class="precios" id="precios">
+    <span class="section-kicker reveal">Paso 1</span>
     <h2 class="section-title section-title--big reveal">Selecciona tu servicio</h2>
     <p class="precios__hint reveal">Toca una tarjeta para elegirla — es lo que vamos a registrar.</p>
     <div class="cards" role="radiogroup" aria-label="Tipo de vehículo">
@@ -85,6 +101,7 @@
   </section>
 
   <section class="registro" id="registro">
+    <span class="section-kicker reveal">Paso 2</span>
     <h2 class="section-title reveal">Registra tu lavado</h2>
     <p class="registro__subtitle reveal">Solo toma un minuto. Te avisamos por teléfono cuando tu auto esté listo.</p>
 
@@ -180,6 +197,7 @@
 </main>
 
 <footer class="footer">
+  <img src="assets/logo-barraza-flat.png" alt="" class="footer__logo" width="900" height="517" loading="lazy">
   <p>Detallados Barraza <span aria-hidden="true">×</span> Wiwynn</p>
   <a href="/admin" class="footer__admin">Acceso equipo</a>
 </footer>
