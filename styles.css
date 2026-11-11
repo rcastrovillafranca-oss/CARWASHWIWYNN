@@ -19,7 +19,7 @@
 }
 
 * { box-sizing: border-box; }
-html { -webkit-text-size-adjust: 100%; scroll-behavior: smooth; }
+html { -webkit-text-size-adjust: 100%; scroll-behavior: smooth; overflow-x: hidden; overflow-x: clip; }
 
 body {
   margin: 0;
@@ -30,6 +30,8 @@ body {
   -webkit-font-smoothing: antialiased;
   position: relative;
   overflow-x: hidden;
+  overflow-x: clip;
+  max-width: 100%;
 }
 
 img { max-width: 100%; display: block; }
@@ -376,10 +378,18 @@ img { max-width: 100%; display: block; }
 
 /* ---------- Ticker ---------- */
 
-.ticker {
+/* Clips the tilted band so it never widens the page on phones. */
+.ticker-wrap {
   position: relative;
   z-index: 2;
-  margin: -26px -10px 0;
+  margin-top: -40px;
+  padding: 14px 0;
+  overflow: hidden;
+}
+
+.ticker {
+  position: relative;
+  margin: 0 -10px;
   transform: rotate(-2.5deg);
   background: var(--cyan);
   color: #02121c;
@@ -722,7 +732,7 @@ img { max-width: 100%; display: block; }
   box-shadow: 0 40px 80px -40px rgba(0, 0, 0, 0.9);
 }
 
-.field { display: flex; flex-direction: column; gap: 8px; }
+.field { display: flex; flex-direction: column; gap: 8px; min-width: 0; }
 
 .field label,
 .field__label {
@@ -735,6 +745,8 @@ img { max-width: 100%; display: block; }
 
 .field input[type="text"],
 .field input[type="tel"] {
+  width: 100%;
+  min-width: 0;
   background: var(--black);
   border: 1.5px solid rgba(255, 255, 255, 0.1);
   border-radius: 12px;
@@ -751,7 +763,7 @@ img { max-width: 100%; display: block; }
 
 .field-row {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
   gap: 12px;
 }
 
